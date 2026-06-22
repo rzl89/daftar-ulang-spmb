@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Daftar Ulang - SMKN 5 KOTA SERANG</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#e17c5a",
+                        "primary-fixed": "#e0e0ff",
+                        "surface-container-high": "#e6e8ea",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#eff1f3",
+                        "background": "#f7f9fb",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "surface-tint": "#4c56af",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#380b00",
+                        "primary-fixed-dim": "#bdc2ff",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-primary-container": "#8690ee",
+                        "tertiary-fixed": "#ffdbd0",
+                        "inverse-surface": "#2d3133",
+                        "inverse-primary": "#bdc2ff",
+                        "surface-dim": "#d8dadc",
+                        "on-surface": "#191c1e",
+                        "surface": "#f7f9fb",
+                        "tertiary-fixed-dim": "#ffb59d",
+                        "secondary": "#835400",
+                        "on-secondary-fixed": "#2a1800",
+                        "on-primary-fixed": "#000767",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#191c1e",
+                        "secondary-fixed-dim": "#ffb957",
+                        "primary-container": "#1a237e",
+                        "on-secondary-container": "#694300",
+                        "on-tertiary-fixed-variant": "#7b2e12",
+                        "on-surface-variant": "#454652",
+                        "surface-bright": "#f7f9fb",
+                        "secondary-container": "#fcab28",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#390c00",
+                        "tertiary-container": "#5c1800",
+                        "surface-container": "#eceef0",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed-variant": "#343d96",
+                        "primary": "#000666",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "outline-variant": "#c6c5d4",
+                        "outline": "#767683",
+                        "secondary-fixed": "#ffddb5",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "16px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "container-max": "1280px",
+                        "base": "4px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "xl": "80px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .text-shadow-sm {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .custom-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+            transform: rotate(180deg);
+        }
+        .custom-wave svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 60px;
+        }
+        .custom-wave .shape-fill {
+            fill: #f7f9fb;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="sticky top-0 w-full z-50 flex justify-between items-center px-gutter py-4 max-w-container-max mx-auto bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-lg border-b border-outline-variant/20 shadow-sm dark:shadow-none">
+<div class="flex items-center gap-3">
+<img alt="SMKN 5 KOTA SERANG Logo" class="h-10 w-auto" src="data:image/png;base64,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"/>
+<span class="font-headline-md text-primary dark:text-primary-fixed-dim tracking-tight">SMKN 5 KOTA SERANG</span>
+</div>
+<nav class="hidden lg:flex items-center gap-8">
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary pb-1" href="#">Beranda</a>
+<a class="text-on-surface-variant dark:text-surface-variant font-medium hover:text-primary transition-all duration-300" href="#">Daftar Ulang</a>
+<a class="text-on-surface-variant dark:text-surface-variant font-medium hover:text-primary transition-all duration-300" href="#">Cek Status</a>
+<a class="text-on-surface-variant dark:text-surface-variant font-medium hover:text-primary transition-all duration-300" href="#">Informasi</a>
+<a class="text-on-surface-variant dark:text-surface-variant font-medium hover:text-primary transition-all duration-300" href="#">Kontak</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="bg-secondary-container text-on-secondary-container px-6 py-2 rounded-xl font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all">Cek Status</button>
+<button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-xl font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all">Daftar Ulang</button>
+</div>
+</header>
+<main>
+<!-- HERO SECTION -->
+<section class="relative min-h-[600px] flex items-center justify-center pt-xl pb-[120px] bg-gradient-to-br from-[#1A237E] to-[#0D1257] overflow-hidden">
+<div class="absolute inset-0 opacity-20 pointer-events-none">
+<div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-secondary-container blur-[120px]"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-primary-fixed-dim blur-[100px]"></div>
+</div>
+<div class="container max-w-container-max mx-auto px-gutter relative z-10 text-center">
+<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-container/90 text-on-secondary-container font-label-md mb-8 animate-bounce">
+<span class="material-symbols-outlined text-[20px]">military_tech</span>
+                    SPMB Tahun Ajaran 2025/2026
+                </div>
+<h1 class="font-display-lg text-white mb-4">
+<span class="block">Daftar Ulang</span>
+<span class="text-secondary-container">Penerimaan Murid Baru</span>
+</h1>
+<p class="text-on-primary-container font-body-lg max-w-2xl mx-auto mb-12 opacity-90">
+                    Selamat bergabung di Institusi Unggulan. Segera selesaikan proses registrasi ulang Anda untuk mengamankan kursi di program keahlian pilihan.
+                </p>
+<!-- Countdown Cards -->
+<div class="flex flex-wrap justify-center gap-4 mb-12">
+<div class="glass-card w-[120px] py-6 rounded-xl">
+<div class="text-secondary-container font-display-lg text-[40px] leading-none mb-2" id="days">05</div>
+<div class="text-white/70 font-label-md uppercase tracking-widest">Hari</div>
+</div>
+<div class="glass-card w-[120px] py-6 rounded-xl">
+<div class="text-secondary-container font-display-lg text-[40px] leading-none mb-2" id="hours">12</div>
+<div class="text-white/70 font-label-md uppercase tracking-widest">Jam</div>
+</div>
+<div class="glass-card w-[120px] py-6 rounded-xl">
+<div class="text-secondary-container font-display-lg text-[40px] leading-none mb-2" id="minutes">45</div>
+<div class="text-white/70 font-label-md uppercase tracking-widest">Menit</div>
+</div>
+<div class="glass-card w-[120px] py-6 rounded-xl">
+<div class="text-secondary-container font-display-lg text-[40px] leading-none mb-2" id="seconds">30</div>
+<div class="text-white/70 font-label-md uppercase tracking-widest">Detik</div>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+<button class="w-full sm:w-auto px-8 py-4 bg-secondary-container text-on-secondary-container rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-black/10 hover:translate-y-[-2px] transition-all">
+<span class="material-symbols-outlined">auto_awesome</span>
+                        Mulai Daftar Ulang
+                    </button>
+<button class="w-full sm:w-auto px-8 py-4 border border-white/30 bg-white/5 backdrop-blur-md text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
+<span class="material-symbols-outlined">search</span>
+                        Cek Status Pendaftaran
+                    </button>
+</div>
+</div>
+<!-- Wave Transition -->
+<div class="custom-wave">
+<svg data-name="Layer 1" preserveaspectratio="none" viewbox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg">
+<path class="shape-fill" d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"></path>
+</svg>
+</div>
+</section>
+<!-- QUICK ACTIONS -->
+<section class="py-xl bg-background">
+<div class="container max-w-container-max mx-auto px-gutter">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Action 1 -->
+<div class="group bg-white p-8 rounded-xl border border-outline-variant/10 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+<div class="w-16 h-16 rounded-xl bg-primary-container/10 flex items-center justify-center mb-6 group-hover:bg-primary-container group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[32px] text-primary-container group-hover:text-white">how_to_reg</span>
+</div>
+<h3 class="font-headline-md text-primary mb-2">Daftar Ulang</h3>
+<p class="text-on-surface-variant">Lengkapi data profil dan verifikasi pilihan kompetensi keahlian Anda.</p>
+</div>
+<!-- Action 2 -->
+<div class="group bg-white p-8 rounded-xl border border-outline-variant/10 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+<div class="w-16 h-16 rounded-xl bg-secondary-container/10 flex items-center justify-center mb-6 group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">
+<span class="material-symbols-outlined text-[32px] text-secondary-container group-hover:text-on-secondary-container">fact_check</span>
+</div>
+<h3 class="font-headline-md text-primary mb-2">Cek Status</h3>
+<p class="text-on-surface-variant">Pantau progres pendaftaran dan hasil seleksi administrasi secara real-time.</p>
+</div>
+<!-- Action 3 -->
+<div class="group bg-white p-8 rounded-xl border border-outline-variant/10 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+<div class="w-16 h-16 rounded-xl bg-green-100 flex items-center justify-center mb-6 group-hover:bg-green-600 group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[32px] text-green-600 group-hover:text-white">info</span>
+</div>
+<h3 class="font-headline-md text-primary mb-2">Informasi</h3>
+<p class="text-on-surface-variant">Panduan lengkap persyaratan, jadwal, dan alur pendaftaran siswa baru.</p>
+</div>
+<!-- Action 4 -->
+<div class="group bg-white p-8 rounded-xl border border-outline-variant/10 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+<div class="w-16 h-16 rounded-xl bg-primary-fixed/30 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[32px] text-primary group-hover:text-white">support_agent</span>
+</div>
+<h3 class="font-headline-md text-primary mb-2">Hubungi Kami</h3>
+<p class="text-on-surface-variant">Layanan bantuan teknis jika Anda mengalami kendala saat pendaftaran.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- ALUR PENDAFTARAN -->
+<section class="py-xl bg-surface-container-lowest">
+<div class="container max-w-container-max mx-auto px-gutter">
+<div class="text-center mb-16">
+<h2 class="font-display-lg text-primary mb-4">Alur Pendaftaran</h2>
+<p class="text-on-surface-variant max-w-xl mx-auto">Ikuti langkah-langkah berikut untuk menyelesaikan proses pendaftaran di SMKN 5 Kota Serang.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+<!-- Step 1 -->
+<div class="relative bg-white p-8 rounded-xl border border-outline-variant/20 overflow-hidden">
+<span class="absolute top-2 right-4 text-[80px] font-black text-primary-container/5 select-none pointer-events-none">01</span>
+<div class="relative z-10">
+<div class="inline-flex px-3 py-1 bg-secondary-container/20 text-on-secondary-container rounded-full font-label-md mb-6">TAHAP 1</div>
+<span class="material-symbols-outlined text-[48px] text-secondary-container mb-6 block">menu_book</span>
+<h4 class="font-headline-md text-primary mb-3">Baca Persyaratan</h4>
+<p class="text-on-surface-variant">Pahami seluruh dokumen dan kualifikasi yang dibutuhkan.</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative bg-white p-8 rounded-xl border border-outline-variant/20 overflow-hidden">
+<span class="absolute top-2 right-4 text-[80px] font-black text-primary-container/5 select-none pointer-events-none">02</span>
+<div class="relative z-10">
+<div class="inline-flex px-3 py-1 bg-secondary-container/20 text-on-secondary-container rounded-full font-label-md mb-6">TAHAP 2</div>
+<span class="material-symbols-outlined text-[48px] text-secondary-container mb-6 block">edit_document</span>
+<h4 class="font-headline-md text-primary mb-3">Isi Formulir</h4>
+<p class="text-on-surface-variant">Lengkapi data diri dan sekolah asal dengan sebenar-benarnya.</p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="relative bg-white p-8 rounded-xl border border-outline-variant/20 overflow-hidden">
+<span class="absolute top-2 right-4 text-[80px] font-black text-primary-container/5 select-none pointer-events-none">03</span>
+<div class="relative z-10">
+<div class="inline-flex px-3 py-1 bg-secondary-container/20 text-on-secondary-container rounded-full font-label-md mb-6">TAHAP 3</div>
+<span class="material-symbols-outlined text-[48px] text-secondary-container mb-6 block">upload_file</span>
+<h4 class="font-headline-md text-primary mb-3">Upload Dokumen</h4>
+<p class="text-on-surface-variant">Unggah scan berkas asli sesuai dengan ketentuan format.</p>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="relative bg-white p-8 rounded-xl border border-outline-variant/20 overflow-hidden">
+<span class="absolute top-2 right-4 text-[80px] font-black text-primary-container/5 select-none pointer-events-none">04</span>
+<div class="relative z-10">
+<div class="inline-flex px-3 py-1 bg-secondary-container/20 text-on-secondary-container rounded-full font-label-md mb-6">TAHAP 4</div>
+<span class="material-symbols-outlined text-[48px] text-secondary-container mb-6 block">verified</span>
+<h4 class="font-headline-md text-primary mb-3">Verifikasi</h4>
+<p class="text-on-surface-variant">Tunggu validasi berkas dari tim panitia pendaftaran.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- JURUSAN -->
+<section class="py-xl bg-background">
+<div class="container max-w-container-max mx-auto px-gutter">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+<div>
+<h2 class="font-display-lg text-primary mb-2">Pilihan Jurusan</h2>
+<p class="text-on-surface-variant">Vokasi masa depan dengan kurikulum berbasis industri terkini.</p>
+</div>
+<button class="px-6 py-3 border-2 border-primary text-primary rounded-xl font-bold hover:bg-primary hover:text-white transition-all">Lihat Detail Kurikulum</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Jurusan Card 1 -->
+<div class="group bg-white p-6 rounded-xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+<div class="bg-primary-container text-white px-4 py-2 rounded-lg inline-block font-bold mb-4 group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">TJKT</div>
+<h5 class="font-headline-md text-primary mb-1">Teknik Jaringan Komputer dan Telekomunikasi</h5>
+<p class="text-label-md text-on-surface-variant opacity-70">Program Keahlian</p>
+</div>
+<!-- Jurusan Card 2 -->
+<div class="group bg-white p-6 rounded-xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+<div class="bg-primary-container text-white px-4 py-2 rounded-lg inline-block font-bold mb-4 group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">PPLG</div>
+<h5 class="font-headline-md text-primary mb-1">Pengembangan Perangkat Lunak dan Gim</h5>
+<p class="text-label-md text-on-surface-variant opacity-70">Program Keahlian</p>
+</div>
+<!-- Jurusan Card 3 -->
+<div class="group bg-white p-6 rounded-xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+<div class="bg-primary-container text-white px-4 py-2 rounded-lg inline-block font-bold mb-4 group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">DKV</div>
+<h5 class="font-headline-md text-primary mb-1">Desain Komunikasi Visual</h5>
+<p class="text-label-md text-on-surface-variant opacity-70">Program Keahlian</p>
+</div>
+<!-- Jurusan Card 4 -->
+<div class="group bg-white p-6 rounded-xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+<div class="bg-primary-container text-white px-4 py-2 rounded-lg inline-block font-bold mb-4 group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">AKL</div>
+<h5 class="font-headline-md text-primary mb-1">Akuntansi dan Keuangan Lembaga</h5>
+<p class="text-label-md text-on-surface-variant opacity-70">Program Keahlian</p>
+</div>
+<!-- Jurusan Card 5 -->
+<div class="group bg-white p-6 rounded-xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+<div class="bg-primary-container text-white px-4 py-2 rounded-lg inline-block font-bold mb-4 group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">MP</div>
+<h5 class="font-headline-md text-primary mb-1">Manajemen Perkantoran</h5>
+<p class="text-label-md text-on-surface-variant opacity-70">Program Keahlian</p>
+</div>
+<!-- Jurusan Card 6 -->
+<div class="group bg-white p-6 rounded-xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+<div class="bg-primary-container text-white px-4 py-2 rounded-lg inline-block font-bold mb-4 group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">BDP</div>
+<h5 class="font-headline-md text-primary mb-1">Bisnis Digital dan Pemasaran</h5>
+<p class="text-label-md text-on-surface-variant opacity-70">Program Keahlian</p>
+</div>
+</div>
+</div>
+</section>
+<!-- BOTTOM CTA -->
+<section class="py-xl bg-background">
+<div class="container max-w-container-max mx-auto px-gutter">
+<div class="bg-gradient-to-r from-[#1A237E] to-[#0D1257] rounded-xl p-12 text-center relative overflow-hidden">
+<!-- Decoration -->
+<div class="absolute -top-12 -left-12 w-64 h-64 bg-secondary-container/10 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-12 -right-12 w-64 h-64 bg-primary-container/20 rounded-full blur-3xl"></div>
+<div class="relative z-10">
+<div class="inline-block bg-secondary-container text-on-secondary-container px-6 py-2 rounded-full font-bold text-sm tracking-widest mb-6">BATAS WAKTU</div>
+<h2 class="font-display-lg text-white mb-6">Jangan Lewatkan Batas Waktu Pendaftaran!</h2>
+<p class="text-on-primary-container font-body-lg max-w-2xl mx-auto mb-10 opacity-90">Segera persiapkan berkas Anda dan lakukan pendaftaran ulang sebelum kuota tiap jurusan terpenuhi.</p>
+<button class="px-10 py-5 bg-secondary-container text-on-secondary-container rounded-xl font-extrabold text-lg shadow-xl hover:scale-105 active:scale-95 transition-all">Daftar Ulang Sekarang</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary">
+<div class="w-full py-xl px-gutter grid grid-cols-1 md:grid-cols-4 gap-xl max-w-container-max mx-auto">
+<div class="md:col-span-1">
+<h2 class="font-headline-md text-on-primary-container font-bold mb-6">SMKN 5 KOTA SERANG</h2>
+<p class="opacity-70 mb-4">Sekolah Menengah Kejuruan Negeri unggulan yang berfokus pada pengembangan talenta industri kreatif dan teknologi digital di Kota Serang.</p>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-headline-md text-secondary-container font-semibold">Tautan Cepat</h4>
+<a class="text-on-primary-container/70 hover:text-secondary-container transition-colors duration-200" href="#">Beranda</a>
+<a class="text-on-primary-container/70 hover:text-secondary-container transition-colors duration-200" href="#">Daftar Ulang</a>
+<a class="text-on-primary-container/70 hover:text-secondary-container transition-colors duration-200" href="#">Cek Status</a>
+<a class="text-on-primary-container/70 hover:text-secondary-container transition-colors duration-200" href="#">Informasi</a>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-headline-md text-secondary-container font-semibold">Kontak</h4>
+<div class="flex items-center gap-3 opacity-70">
+<span class="material-symbols-outlined">location_on</span>
+                    Jl. Raya Serang No. 123
+                </div>
+<div class="flex items-center gap-3 opacity-70">
+<span class="material-symbols-outlined">call</span>
+                    (0254) 123456
+                </div>
+<div class="flex items-center gap-3 opacity-70">
+<span class="material-symbols-outlined">mail</span>
+                    info@smkn5serang.sch.id
+                </div>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-headline-md text-secondary-container font-semibold">Jam Layanan</h4>
+<p class="opacity-70">Senin - Jumat: 08:00 - 15:00 WIB</p>
+<div class="mt-4 flex gap-4">
+<a class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">language</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">share</span>
+</a>
+</div>
+</div>
+</div>
+<div class="border-t border-white/10 py-8 px-gutter text-center opacity-60">
+<p>© 2025 SMKN 5 Kota Serang. Disiplin, Cerdas dan Terampil.</p>
+</div>
+</footer>
+<script>
+        // Micro-interaction for countdown timer
+        function updateTimer() {
+            const elements = ['days', 'hours', 'minutes', 'seconds'];
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                let val = parseInt(el.innerText);
+                // Simple visual cycling for demo
+                if (id === 'seconds') {
+                    val = val > 0 ? val - 1 : 59;
+                }
+                el.innerText = val < 10 ? '0' + val : val;
+            });
+        }
+        setInterval(updateTimer, 1000);
+
+        // Simple intersection observer for reveal animations
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section > div').forEach(el => {
+            el.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
+            observer.observe(el);
+        });
+    </script>
+</body></html>

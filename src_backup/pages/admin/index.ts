@@ -1,0 +1,12 @@
+export { default as AdminLayout } from './AdminLayout';
+export { default as LoginAdmin } from './LoginAdmin';
+export { default as Dashboard } from './Dashboard';
+export { default as DataPeserta } from './DataPeserta';
+export { default as DataKelulusan } from './DataKelulusan';
+export { default as VerifikasiBerkas } from './VerifikasiBerkas';
+export { default as Pengumuman } from './Pengumuman';
+export { default as Laporan } from './Laporan';
+export { default as LogAktivitas } from './LogAktivitas';
+export { default as Pengaturan } from './Pengaturan';
+export { default as KelolaJurusan } from './KelolaJurusan';
+
