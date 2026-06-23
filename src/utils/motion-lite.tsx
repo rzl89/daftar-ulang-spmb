@@ -26,5 +26,6 @@ export const motion = {
   article: createMotionComponent('article'),
   nav: createMotionComponent('nav'),
   header: createMotionComponent('header'),
-  footer: createMotionComponent('footer')
+  footer: createMotionComponent('footer'),
+  aside: createMotionComponent('aside')
 };
