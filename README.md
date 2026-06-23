@@ -1,129 +1,197 @@
-# Panduan Deployment & Komersialisasi Web SPMB (Daftar Ulang)
+# Portal SPMB — Sistem Penerimaan & Daftar Ulang Siswa Baru
 
-Panduan ini berisi langkah-langkah komprehensif, detail, dan terstruktur untuk mengonfigurasi, mengunggah database, hingga menjalankan aplikasi secara *live* agar siap digunakan untuk kebutuhan komersial di berbagai instansi atau sekolah.
-
-## 🌟 Arsitektur Sistem
-- **Frontend**: React + Vite + Tailwind CSS + Framer Motion
-- **Backend API**: Node.js + Express (di file `server.ts` atau Vercel Serverless Functions)
-- **Database**: PostgreSQL (menggunakan Supabase/Neon/Vercel Postgres)
-- **ORM**: Drizzle ORM
-- **Deployment**: Vercel
+Portal digital lengkap untuk mengelola proses Seleksi Penerimaan Murid Baru (SPMB), daftar ulang online, dan manajemen data peserta didik baru. Dirancang **multi-tenant** sehingga satu codebase dapat digunakan oleh banyak sekolah dengan konfigurasi terpisah.
 
 ---
 
-## 📋 Prasyarat Sebelum Mulai
-Pastikan Anda sudah memiliki akun di layanan berikut:
-1. **GitHub** (untuk menyimpan source code)
-2. **Vercel** (untuk hosting website)
-3. **Penyedia Database PostgreSQL** (rekomendasi: [Supabase](https://supabase.com), [Neon](https://neon.tech), atau [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres))
+## 🌟 Arsitektur & Tech Stack
+
+| Layer        | Teknologi                                                                 |
+|--------------|---------------------------------------------------------------------------|
+| **Frontend** | React 19, Vite, Tailwind CSS 4, Framer Motion, dnd-kit (Drag-and-Drop)   |
+| **Backend**  | Node.js + Express (file `server.ts`) — juga mendukung Vercel Serverless   |
+| **Database** | PostgreSQL (Neon / Supabase / Vercel Postgres)                            |
+| **ORM**      | Drizzle ORM + Drizzle Kit                                                 |
+| **Deploy**   | Vercel                                                                    |
 
 ---
 
-## 🛠 Langkah 1: Persiapan Database (PostgreSQL)
+## 📦 Fitur Utama
 
-Karena aplikasi ini menggunakan Drizzle ORM untuk mengelola data, Anda memerlukan URL Koneksi PostgreSQL (`DATABASE_URL`).
+### Halaman Publik (Pengunjung / Calon Siswa)
+- **Beranda Dinamis** — Konten halaman utama dikelola dari Panel Admin (blok-blok yang bisa diatur urutannya).
+- **Countdown Timer** — Hitung mundur otomatis menuju batas waktu daftar ulang.
+- **Verifikasi Kelulusan** — Calon siswa memasukkan NISN + tanggal lahir untuk cek status kelulusan SPMB.
+- **Formulir Daftar Ulang** — Form multi-step: data pribadi, data akademik, data orang tua, dan upload berkas.
+- **Cetak Bukti Daftar Ulang** — Setelah registrasi berhasil, siswa dapat mencetak lembar bukti pendaftaran.
+- **Peta Lokasi & Kontak** — Embed Google Maps dan informasi kontak sekolah.
 
-### Cara Membuat Database di Neon/Supabase:
-1. Daftar dan buat projek/database baru di Neon.tech atau Supabase.
-2. Cari menu **Connection String** atau **Database URL**.
-3. Format URL koneksinya akan terlihat seperti ini:
-   `postgresql://[user]:[password]@[host]:[port]/[db_name]?sslmode=require`
-4. **Simpan URL ini**, kita akan menggunakannya di langkah selanjutnya.
-
-### Migrasi & Upload Skema Database:
-1. Buka terminal di VSCode pada folder proyek ini.
-2. Buat file `.env` (jika belum ada) dan isi dengan:
-   ```env
-   DATABASE_URL=postgresql://[user]:[password]@[host]:[port]/[db_name]?sslmode=require
-   ```
-3. Jalankan perintah berikut untuk meng-generate skema database:
-   ```bash
-   npm run generate
-   ```
-4. Jalankan perintah ini untuk mem-push/mengupload skema (membuat tabel-tabel) langsung ke database online Anda:
-   ```bash
-   npm run push
-   ```
-   *Catatan: Jika terjadi error saat push, pastikan perintah pada `package.json` Anda sudah dikonfigurasi untuk menjalankan `drizzle-kit push`.*
-
----
-
-## 🚀 Langkah 2: Konfigurasi Deployment di Vercel
-
-Untuk mengkomersilkan web ini, web harus online dan dapat diakses publik dengan cepat dan aman.
-
-1. **Upload ke GitHub:**
-   - Pastikan source code ini sudah Anda push ke repository GitHub pribadi (*private/public*).
-2. **Buat Projek di Vercel:**
-   - Login ke [Vercel.com](https://vercel.com)
-   - Klik **"Add New..."** -> **"Project"**
-   - Pilih repository GitHub tempat Anda menyimpan web ini, lalu klik **"Import"**.
-3. **Konfigurasi Environment Variables di Vercel:**
-   - Pada halaman *Configure Project*, gulir ke bagian **Environment Variables**.
-   - Tambahkan variabel berikut:
-     - **Name**: `DATABASE_URL`
-     - **Value**: Masukkan *Connection String Database* Anda (yang didapat dari langkah 1).
-   - Klik **Add**.
-4. **Deploy:**
-   - Klik tombol **Deploy**.
-   - Vercel akan otomatis melakukan build (`npm run build`). Proses ini membutuhkan waktu sekitar 1-3 menit.
-   - Jika sukses, Anda akan mendapatkan URL publik website Anda (contoh: `nama-sekolah-spmb.vercel.app`).
+### Panel Admin (`/admin`)
+- **Dashboard** — Statistik ringkasan: total pendaftar, sudah daftar ulang, menunggu verifikasi, ditolak.
+- **Data Peserta** — Tabel lengkap semua pendaftar. Admin bisa memfilter, melihat detail, dan menghapus data.
+- **Data Kelulusan** — Upload data kelulusan via file CSV/Excel (bulk insert). Reset data kelulusan.
+- **Verifikasi Berkas** — Ubah status pendaftaran: `MENUNGGU_VERIFIKASI` → `DITERIMA` / `DITOLAK`.
+- **Pengumuman** — CRUD pengumuman dengan kategori dan status publikasi.
+- **Kelola Jurusan** — CRUD jurusan/program keahlian (kode, nama, kuota, urutan, aktif/nonaktif).
+- **Kelola Landing Page (Baru!)** — Drag-and-drop builder untuk mengatur konten halaman Beranda:
+  - **Blok Hero** — Banner utama dengan countdown.
+  - **Blok Alur Pendaftaran (Steps)** — Langkah-langkah daftar ulang.
+  - **Blok Peta & Kontak (Map)** — Informasi lokasi & kontak sekolah.
+  - **Blok Teks Custom** — Konten HTML bebas yang bisa diedit admin.
+  - **Blok Gambar** — Upload gambar via URL.
+  - Admin bisa **mengaktifkan/menonaktifkan**, **mengurutkan ulang** (drag-and-drop), dan **mengedit konten** setiap blok.
+- **Laporan** — Ekspor dan ringkasan data pendaftaran.
+- **Log Aktivitas** — Riwayat tindakan admin (audit trail).
+- **Pengaturan** — Konfigurasi: nama sekolah, tahun ajaran, alamat, kontak, batas waktu daftar ulang, password admin.
 
 ---
 
-## ⚙️ Langkah 3: Pengaturan Domain Kustom (Opsional Tapi Direkomendasikan)
+## 🗄 Skema Database (Drizzle ORM)
 
-Untuk komersialisasi, Anda pasti ingin menggunakan domain sekolah asli seperti `spmb.smkn5serang.sch.id`.
+Semua tabel didefinisikan di `db/schema.ts`:
 
-1. Di Dashboard Vercel, masuk ke project Anda.
-2. Klik tab **Settings** -> **Domains**.
-3. Masukkan nama domain kustom yang diinginkan, lalu klik **Add**.
-4. Vercel akan memberikan konfigurasi DNS (seperti CNAME atau A Record).
-5. Buka panel kontrol penyedia domain Anda (contoh: Niagahoster, Rumahweb) dan tambahkan DNS record sesuai instruksi Vercel.
-6. Tunggu proses propagasi DNS (biasanya beberapa menit hingga 24 jam).
-
----
-
-## 🔐 Langkah 4: Operasional & Pengaturan Aplikasi (Panel Admin)
-
-Web ini dirancang agar dinamis dan bisa digunakan oleh banyak sekolah tanpa harus mengubah source code.
-
-1. **Akses Panel Admin**
-   Buka URL: `https://[domain-anda.com]/admin`
-2. **Login Admin**
-   Demi alasan keamanan, **password default tidak dicantumkan di publik**. Untuk mengetahui password login pertama kali:
-   - Silakan buka file `server.ts` di *source code* proyek ini dan cari baris terkait `admin_password`.
-   - Atau, cek langsung tabel `settings` di database PostgreSQL Anda setelah menjalankan migrasi.
-   - **Sangat Penting:** Segera ubah password admin default Anda melalui database (`tabel settings`) sesaat setelah login pertama kali untuk mencegah akses tidak sah.
-3. **Konfigurasi Pengaturan Sistem**
-   Masuk ke menu **Pengaturan** dan isi data berikut:
-   - Nama Sekolah (contoh: SMKN 5)
-   - Nama Lengkap Sekolah (contoh: SMK Negeri 5 Kota Serang)
-   - Tahun Ajaran
-   - Kuota Penerimaan
-   - **Batas Waktu Daftar Ulang** (Countdown timer otomatis di beranda akan membaca tanggal ini).
-4. **Konfigurasi Jurusan**
-   Masuk ke menu **Manajemen Jurusan** untuk menambah, mengedit, atau menghapus jurusan yang tersedia di sekolah klien.
+| Tabel                  | Deskripsi                                                              |
+|------------------------|------------------------------------------------------------------------|
+| `registrations`        | Data pendaftaran siswa (NISN, nama, jurusan pilihan, status, dsb.)     |
+| `passed_students`      | Data kelulusan SPMB (diupload via CSV)                                 |
+| `settings`             | Pengaturan sistem key-value (nama sekolah, password admin, dsb.)       |
+| `announcements`        | Pengumuman dengan kategori dan status publikasi                        |
+| `jurusan`              | Daftar jurusan/program keahlian                                        |
+| `landing_page_blocks`  | Blok konten landing page (type, content JSON, sort order, is_active)   |
+| `activity_logs`        | Log aktivitas admin                                                    |
 
 ---
 
-## 🐛 Troubleshooting & Error Handling
+## 🔌 API Endpoints
 
-- **Countdown Timer Tidak Berjalan/Acak:**
-  Pastikan Anda telah mengisi "Batas Waktu Daftar Ulang" di Panel Admin dengan format tanggal dan waktu yang valid.
-- **Data Peserta Tidak Tersimpan (Fetch Error):**
-  Pastikan `DATABASE_URL` di Vercel sudah benar dan tabel di database telah terbuat sempurna dengan mengecek langsung di dashboard database (Supabase/Neon).
-- **Gagal Upload Berkas:**
-  Pastikan koneksi stabil. Fitur upload file akan memvalidasi apakah file melebihi 2MB.
+### Publik (Tanpa Autentikasi)
+
+| Method | Endpoint                  | Deskripsi                                   |
+|--------|---------------------------|---------------------------------------------|
+| GET    | `/api/health`             | Health check                                |
+| GET    | `/api/settings`           | Ambil pengaturan publik (tanpa password)     |
+| GET    | `/api/jurusan`            | Daftar jurusan aktif                         |
+| GET    | `/api/landing-blocks`     | Daftar blok landing page aktif (sorted)      |
+| GET    | `/api/registrations/:nisn`| Cek status pendaftaran berdasarkan NISN      |
+| POST   | `/api/registrations`      | Submit pendaftaran baru                      |
+| POST   | `/api/verifikasi`         | Verifikasi kelulusan (NISN + tanggal lahir)  |
+
+### Admin
+
+| Method | Endpoint                              | Deskripsi                          |
+|--------|---------------------------------------|------------------------------------|
+| POST   | `/api/admin/login`                    | Login admin (password check)       |
+| GET    | `/api/admin/stats`                    | Statistik dashboard                |
+| GET    | `/api/admin/registrations`            | Semua data pendaftaran             |
+| PUT    | `/api/admin/registrations/:id`        | Update status pendaftaran          |
+| DELETE | `/api/admin/registrations/:id`        | Hapus data pendaftaran             |
+| GET    | `/api/admin/settings`                 | Semua pengaturan (termasuk sensitif)|
+| PUT    | `/api/admin/settings/:key`            | Upsert pengaturan                  |
+| GET    | `/api/admin/jurusan`                  | Semua jurusan (termasuk nonaktif)  |
+| POST   | `/api/admin/jurusan`                  | Tambah jurusan                     |
+| PUT    | `/api/admin/jurusan/:id`              | Edit jurusan                       |
+| DELETE | `/api/admin/jurusan/:id`              | Hapus jurusan                      |
+| GET    | `/api/admin/landing-blocks`           | Semua blok landing page            |
+| POST   | `/api/admin/landing-blocks`           | Tambah blok baru                   |
+| PUT    | `/api/admin/landing-blocks/:id`       | Edit blok                          |
+| PUT    | `/api/admin/landing-blocks/reorder`   | Reorder blok (drag-and-drop)       |
+| DELETE | `/api/admin/landing-blocks/:id`       | Hapus blok                         |
+| GET    | `/api/admin/passed-students`          | Semua data kelulusan               |
+| POST   | `/api/admin/passed-students/bulk`     | Bulk insert data kelulusan (CSV)   |
+| DELETE | `/api/admin/passed-students`          | Reset semua data kelulusan         |
+| GET    | `/api/admin/announcements`            | Semua pengumuman                   |
+| POST   | `/api/admin/announcements`            | Tambah pengumuman                  |
+| PUT    | `/api/admin/announcements/:id`        | Edit pengumuman                    |
+| DELETE | `/api/admin/announcements/:id`        | Hapus pengumuman                   |
+| GET    | `/api/admin/logs`                     | 50 log aktivitas terbaru           |
+| POST   | `/api/admin/logs`                     | Catat log aktivitas                |
+| POST   | `/api/admin/seed`                     | Seed data default                  |
 
 ---
 
-## 🤝 Layanan Komersial & White-labeling
+## 📋 Prasyarat
 
-Jika Anda menjual sistem ini ke pihak sekolah lain:
-1. Buatkan **1 Database terpisah** per sekolah klien agar data tidak bercampur.
-2. Buatkan **1 Vercel Project** baru dengan melakukan import repository yang sama, namun isi `DATABASE_URL` dengan database spesifik sekolah tersebut.
-3. Atur Custom Domain sesuai sekolah tersebut.
-4. Sesuaikan logo dan warna aksen di Panel Pengaturan jika tersedia.
+1. **Node.js** ≥ 18
+2. **npm** ≥ 9
+3. Akun **GitHub**, **Vercel**, dan penyedia **PostgreSQL** (Neon/Supabase)
 
-Selamat mengembangkan dan mengkomersialisasikan aplikasi ini! 🚀
+---
+
+## 🛠 Instalasi & Pengembangan Lokal
+
+```bash
+# 1. Clone repository
+git clone https://github.com/[username]/daftar-ulang-spmb.git
+cd daftar-ulang-spmb
+
+# 2. Install dependencies
+npm install
+
+# 3. Buat file .env
+echo "DATABASE_URL=postgresql://[user]:[password]@[host]:[port]/[db_name]?sslmode=require" > .env
+
+# 4. Push skema database
+npm run push
+
+# 5. Seed data awal (opsional — jalankan sekali setelah tabel dibuat)
+# Panggil endpoint: POST http://localhost:3000/api/admin/seed
+
+# 6. Jalankan server backend (development)
+npx tsx server.ts
+
+# 7. Jalankan frontend (di terminal terpisah)
+npm run dev
+```
+
+---
+
+## 🚀 Deployment ke Vercel
+
+1. **Push ke GitHub** — Pastikan source code sudah di repository.
+2. **Import di Vercel** — Login ke [vercel.com](https://vercel.com), klik *Add New > Project*, pilih repo.
+3. **Set Environment Variable:**
+   - `DATABASE_URL` = Connection String PostgreSQL Anda.
+4. **Deploy** — Klik Deploy. Build otomatis dalam 1-3 menit.
+5. **Domain Kustom (opsional):**
+   - Di Vercel > Settings > Domains, tambahkan domain (contoh: `spmb.smkn5serang.sch.id`).
+   - Ikuti instruksi DNS yang diberikan Vercel.
+
+---
+
+## 🔐 Operasional Panel Admin
+
+1. **Akses:** Buka `https://[domain-anda]/admin`
+2. **Login:** Password default ada di tabel `settings` (key: `admin_password`) atau di `server.ts`. **Segera ubah setelah login pertama.**
+3. **Langkah Awal:**
+   - Isi Pengaturan Sistem (nama sekolah, tahun ajaran, kontak, batas waktu daftar ulang).
+   - Kelola Jurusan.
+   - Upload Data Kelulusan (CSV).
+   - Atur Landing Page sesuai kebutuhan.
+   - Buat Pengumuman.
+
+---
+
+## 🐛 Troubleshooting
+
+| Masalah                           | Solusi                                                                 |
+|-----------------------------------|------------------------------------------------------------------------|
+| Countdown timer tidak berjalan    | Isi "Batas Waktu Daftar Ulang" di Pengaturan dengan format tanggal valid |
+| Data peserta tidak tersimpan      | Cek `DATABASE_URL` dan pastikan tabel terbuat di database              |
+| Gagal upload berkas               | Pastikan koneksi stabil, file tidak melebihi 2MB                       |
+| Landing page kosong               | Tambahkan blok di menu Kelola Landing Page atau biarkan kosong (default akan tampil) |
+
+---
+
+## 🤝 White-labeling & Multi-Tenant
+
+Untuk menjual ke sekolah lain:
+1. Buat **1 database terpisah** per sekolah.
+2. Buat **1 Vercel project** baru, import repo yang sama, set `DATABASE_URL` berbeda.
+3. Atur domain kustom per sekolah.
+4. Sesuaikan pengaturan via Panel Admin (tidak perlu ubah code).
+
+---
+
+## 📄 Lisensi
+
+Hak cipta dilindungi. Hubungi pengembang untuk lisensi komersial.

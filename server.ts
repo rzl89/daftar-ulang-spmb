@@ -278,6 +278,103 @@ app.put('/api/admin/settings/:key', async (req, res) => {
 });
 
 // ================================================================
+//  LANDING PAGE BLOCKS — PUBLIC & ADMIN
+// ================================================================
+
+// GET — Public: list active blocks
+app.get('/api/landing-blocks', async (_req, res) => {
+  try {
+    const rows = await db.query.landingPageBlocks.findMany({
+      where: eq(schema.landingPageBlocks.isActive, true),
+      orderBy: [asc(schema.landingPageBlocks.sortOrder)],
+    });
+    res.json(rows);
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET — Admin: list all blocks
+app.get('/api/admin/landing-blocks', async (_req, res) => {
+  try {
+    const rows = await db.query.landingPageBlocks.findMany({
+      orderBy: [asc(schema.landingPageBlocks.sortOrder)],
+    });
+    res.json(rows);
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST — Create block
+app.post('/api/admin/landing-blocks', async (req, res) => {
+  try {
+    const { type, content, sortOrder, isActive } = req.body;
+    const [row] = await db.insert(schema.landingPageBlocks).values({
+      type,
+      content: content || {},
+      sortOrder: sortOrder || 0,
+      isActive: isActive !== undefined ? isActive : true,
+    }).returning();
+    res.status(201).json(row);
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error: ' + e.message });
+  }
+});
+
+// PUT — Reorder blocks (MUST be before /:id route)
+app.put('/api/admin/landing-blocks/reorder', async (req, res) => {
+  try {
+    const { items } = req.body; // Array of { id, sortOrder }
+    if (!Array.isArray(items)) return res.status(400).json({ message: 'Invalid data format' });
+
+    for (const item of items) {
+      await db.update(schema.landingPageBlocks)
+        .set({ sortOrder: item.sortOrder, updatedAt: new Date() })
+        .where(eq(schema.landingPageBlocks.id, item.id));
+    }
+    res.json({ message: 'Reordered successfully' });
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error: ' + e.message });
+  }
+});
+
+// PUT — Update block
+app.put('/api/admin/landing-blocks/:id', async (req, res) => {
+  try {
+    const { type, content, sortOrder, isActive } = req.body;
+    const [row] = await db.update(schema.landingPageBlocks)
+      .set({
+        ...(type !== undefined && { type }),
+        ...(content !== undefined && { content }),
+        ...(sortOrder !== undefined && { sortOrder }),
+        ...(isActive !== undefined && { isActive }),
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.landingPageBlocks.id, Number(req.params.id)))
+      .returning();
+    
+    if (!row) return res.status(404).json({ message: 'Not found' });
+    res.json(row);
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error: ' + e.message });
+  }
+});
+
+// DELETE — Delete block
+app.delete('/api/admin/landing-blocks/:id', async (req, res) => {
+  try {
+    const [row] = await db.delete(schema.landingPageBlocks)
+      .where(eq(schema.landingPageBlocks.id, Number(req.params.id)))
+      .returning();
+    if (!row) return res.status(404).json({ message: 'Not found' });
+    res.json({ message: 'Deleted successfully' });
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ================================================================
 //  SEED — Initialize default jurusan data
 // ================================================================
 app.post('/api/admin/seed', async (_req, res) => {

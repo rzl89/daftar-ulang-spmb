@@ -9,4 +9,4 @@ export { default as Laporan } from './Laporan';
 export { default as LogAktivitas } from './LogAktivitas';
 export { default as Pengaturan } from './Pengaturan';
 export { default as KelolaJurusan } from './KelolaJurusan';
-
+export { default as KelolaLandingPage } from './KelolaLandingPage';

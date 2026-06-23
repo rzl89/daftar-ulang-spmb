@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { Layout } from 'lucide-react';
 
 const menuItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -30,6 +31,7 @@ const menuItems = [
   { path: '/admin/verifikasi', label: 'Verifikasi Berkas', icon: FileCheck },
   { path: '/admin/pengumuman', label: 'Pengumuman', icon: Megaphone },
   { path: '/admin/jurusan', label: 'Kelola Jurusan', icon: BookOpen },
+  { path: '/admin/landing-page', label: 'Kelola Landing Page', icon: Layout },
   { path: '/admin/laporan', label: 'Laporan', icon: BarChart3 },
   { path: '/admin/aktivitas', label: 'Log Aktivitas', icon: History },
   { path: '/admin/pengaturan', label: 'Pengaturan', icon: Settings },

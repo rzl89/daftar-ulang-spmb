@@ -94,3 +94,22 @@ export const passedStudents = pgTable('passed_students', {
   jurusanDiterima: varchar('jurusan_diterima', { length: 100 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// ===================== LANDING PAGE BLOCKS TABLE =====================
+export const landingPageBlocks = pgTable('landing_page_blocks', {
+  id: serial('id').primaryKey(),
+  type: varchar('type', { length: 50 }).notNull(), // 'HERO', 'STEPS', 'MAP', 'TEXT', 'IMAGE'
+  content: jsonb('content').$type<{
+    title?: string;
+    description?: string;
+    imageUrl?: string;
+    html?: string;
+    buttonText?: string;
+    buttonLink?: string;
+    [key: string]: any;
+  }>().default({}).notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
