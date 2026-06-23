@@ -74,7 +74,7 @@ export default function BuktiDaftarUlang() {
   }
 
   return (
-    <div className="w-full min-h-screen py-12 px-6 md:px-8 max-w-3xl mx-auto flex flex-col items-center">
+    <div className="w-full min-h-screen pt-32 pb-12 px-6 md:px-8 max-w-3xl mx-auto flex flex-col items-center">
       
       <div className="w-20 h-20 bg-success/10 text-success rounded-full flex items-center justify-center mb-6">
         <CheckCircle2 className="w-10 h-10" />

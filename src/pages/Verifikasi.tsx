@@ -42,7 +42,7 @@ export default function Verifikasi() {
   };
 
   return (
-    <div className="w-full min-h-screen py-12 px-6 md:px-8 xl:max-w-6xl mx-auto flex flex-col items-center">
+    <div className="w-full min-h-screen pt-32 pb-12 px-6 md:px-8 xl:max-w-6xl mx-auto flex flex-col items-center">
       
       <div className="text-center mb-10 w-full">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/10 text-blue-600 mb-6">

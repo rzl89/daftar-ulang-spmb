@@ -176,7 +176,7 @@ export default function DaftarUlang() {
   ];
 
   return (
-    <div className="w-full min-h-screen py-10 px-4 md:px-8 xl:max-w-6xl mx-auto">
+    <div className="w-full min-h-screen pt-32 pb-12 px-4 md:px-8 xl:max-w-6xl mx-auto">
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold text-slate-800 mb-2">Formulir Daftar Ulang</h1>
         <p className="text-slate-500">Lengkapi data di bawah ini dengan informasi yang valid dan benar.</p>
