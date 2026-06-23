@@ -23,7 +23,7 @@ interface SettingsState {
 }
 
 // Fallback defaults (used before API data loads)
-const DEFAULTS: Record<string, string> = {
+const DEFAULTS: Omit<SettingsState, 'isLoaded' | 'fetchSettings' | 'getSetting'> & Record<string, string> = {
   school_name: 'SMKN 5 KOTA SERANG',
   school_full_name: 'SMK Negeri 5 Kota Serang',
   school_year: '2025/2026',
