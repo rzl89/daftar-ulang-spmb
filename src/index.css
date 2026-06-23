@@ -128,7 +128,7 @@ h1, h2, h3, h4, h5, h6 {
 
   .glass-card::before {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-50 pointer-events-none;
+    @apply absolute inset-0 bg-linear-to-br from-white/40 to-transparent opacity-50 pointer-events-none;
   }
 
   .gradient-mesh-navy {
