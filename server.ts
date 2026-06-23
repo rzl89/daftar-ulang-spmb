@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import pg from 'pg';
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './db/schema.js';
 import { eq, desc, asc, count, sql, like } from 'drizzle-orm';
 import dotenv from 'dotenv';
@@ -12,12 +12,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
-
-const db = drizzle(pool, { schema });
+const sql_client = neon(process.env.DATABASE_URL!);
+const db = drizzle(sql_client, { schema });
 
 // ================================================================
 //  HEALTH CHECK
