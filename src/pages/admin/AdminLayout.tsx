@@ -84,8 +84,8 @@ export default function AdminLayout() {
       {/* Logo Area */}
       <div className={`flex items-center justify-between p-4 border-b border-slate-700/50 ${!isSidebarOpen && 'justify-center'}`}>
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="p-1.5 bg-blue-600 rounded-lg shrink-0">
-            <Shield className="w-6 h-6 text-white" />
+          <div className="p-1.5 bg-accent rounded-lg shrink-0 shadow-lg shadow-accent/20">
+            <Shield className="w-6 h-6 text-primary" />
           </div>
           {isSidebarOpen && (
             <motion.div
@@ -130,12 +130,12 @@ export default function AdminLayout() {
               onClick={() => setIsMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative
                 ${isActive 
-                  ? 'bg-blue-600/10 text-blue-400' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-accent/10 text-accent' 
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
                 }`}
               title={!isSidebarOpen ? item.label : undefined}
             >
-              <Icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-blue-500' : 'group-hover:text-white'}`} />
+              <Icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-accent' : 'group-hover:text-white'}`} />
               
               <AnimatePresence mode="wait">
                 {isSidebarOpen && (
@@ -153,7 +153,7 @@ export default function AdminLayout() {
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent rounded-r-full shadow-[0_0_8px_rgba(var(--color-accent),0.5)]"
                 />
               )}
             </NavLink>
@@ -162,10 +162,10 @@ export default function AdminLayout() {
       </nav>
 
       {/* User Area */}
-      <div className="p-4 border-t border-slate-700/50">
+      <div className="p-4 border-t border-white/10">
         <button 
           onClick={handleLogout}
-          className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors ${!isSidebarOpen && 'justify-center'}`}
+          className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-white/60 hover:text-red-400 hover:bg-red-400/10 transition-colors ${!isSidebarOpen && 'justify-center'}`}
         >
           <LogOut className="w-5 h-5 shrink-0" />
           {isSidebarOpen && <span className="font-medium text-sm">Logout</span>}
@@ -175,12 +175,12 @@ export default function AdminLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-200 flex">
+    <div className="min-h-screen bg-surface-warm dark:bg-slate-900 transition-colors duration-200 flex">
       {/* Desktop Sidebar */}
       <motion.aside
         initial={false}
         animate={{ width: isSidebarOpen ? 256 : 80 }}
-        className="hidden md:block sticky top-0 h-screen z-40 bg-slate-900 border-r border-slate-800 overflow-hidden shrink-0"
+        className="hidden md:block sticky top-0 h-screen z-40 gradient-mesh-navy border-r border-white/10 overflow-hidden shrink-0"
       >
         <SidebarContent />
       </motion.aside>
@@ -250,7 +250,7 @@ export default function AdminLayout() {
                   <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Admin Utama</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">admin@smkn5.sch.id</p>
                 </div>
-                <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center text-primary font-extrabold shadow-sm ring-2 ring-white dark:ring-slate-800">
                   A
                 </div>
               </div>

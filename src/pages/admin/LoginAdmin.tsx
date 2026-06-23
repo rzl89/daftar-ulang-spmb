@@ -49,12 +49,9 @@ export default function LoginAdmin() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center relative overflow-hidden p-4">
-      {/* Dynamic Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/20 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-600/20 blur-[120px]" />
-      </div>
+    <div className="min-h-screen gradient-mesh-navy flex items-center justify-center relative overflow-hidden p-4">
+      {/* Background Batik motif */}
+      <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-batik-kawung" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -62,14 +59,15 @@ export default function LoginAdmin() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md z-10"
       >
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700 rounded-3xl shadow-2xl overflow-hidden">
+        <div className="glass shadow-2xl border border-white/10 rounded-3xl overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent via-accent-light to-accent" />
           <div className="p-8 sm:p-10">
             <div className="flex flex-col items-center justify-center mb-8">
-              <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20 mb-6">
-                <Shield className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20 mb-6">
+                <Shield className="w-8 h-8 text-primary" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 text-center">Admin Panel</h1>
-              <p className="text-slate-400 text-center text-sm">SPMB {schoolFullName}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 text-center tracking-tight">Admin Panel</h1>
+              <p className="text-white/70 text-center text-sm font-medium tracking-wide">SPMB {schoolFullName}</p>
             </div>
 
             {error && (
@@ -84,7 +82,7 @@ export default function LoginAdmin() {
 
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300 ml-1">Password</label>
+                <label className="text-sm font-medium text-white/80 ml-1">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -94,13 +92,13 @@ export default function LoginAdmin() {
                       setError('');
                     }}
                     placeholder="Masukkan password admin"
-                    className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all placeholder:text-slate-600"
+                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all placeholder:text-white/40"
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -110,7 +108,7 @@ export default function LoginAdmin() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl py-3.5 transition-all shadow-lg shadow-blue-600/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-accent hover:bg-accent-light text-primary font-bold rounded-xl py-3.5 transition-all shadow-lg shadow-accent/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>
@@ -123,9 +121,9 @@ export default function LoginAdmin() {
               </button>
             </form>
 
-            <div className="mt-8 text-center">
-              <p className="text-xs text-slate-500">
-                Default password untuk demo: <span className="text-slate-400 font-mono bg-slate-900/50 px-2 py-1 rounded">admin2025</span>
+            <div className="mt-8 text-center pt-6 border-t border-white/10">
+              <p className="text-xs text-white/50">
+                Default password untuk demo: <span className="text-accent font-mono bg-white/5 px-2 py-1 rounded">admin2025</span>
               </p>
             </div>
           </div>
