@@ -10,3 +10,5 @@ export { default as LogAktivitas } from './LogAktivitas';
 export { default as Pengaturan } from './Pengaturan';
 export { default as KelolaJurusan } from './KelolaJurusan';
 export { default as KelolaLandingPage } from './KelolaLandingPage';
+export { default as KelolaKonten } from './KelolaKonten';
+export { default as KelolaPertanyaan } from './KelolaPertanyaan';

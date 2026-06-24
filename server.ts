@@ -646,6 +646,258 @@ app.post('/api/admin/logs', async (req, res) => {
 });
 
 // ================================================================
+//  PAGE CONTENTS — Konten dinamis halaman publik
+// ================================================================
+
+// GET — Publik: ambil konten per halaman
+app.get('/api/page-contents', async (req, res) => {
+  try {
+    const { page } = req.query;
+    const where = page ? eq(schema.pageContents.page, page as string) : undefined;
+    const rows = await db.query.pageContents.findMany({ where });
+    // Return as object map: { section: value }
+    const map: Record<string, string> = {};
+    rows.forEach(r => { map[r.section] = r.value; });
+    res.json(map);
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET — Admin: ambil semua konten (dengan detail lengkap)
+app.get('/api/admin/page-contents', async (_req, res) => {
+  try {
+    const rows = await db.query.pageContents.findMany({
+      orderBy: [asc(schema.pageContents.page), asc(schema.pageContents.section)],
+    });
+    res.json(rows);
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT — Admin: update satu item konten
+app.put('/api/admin/page-contents/:id', async (req, res) => {
+  try {
+    const { value, label } = req.body;
+    const [row] = await db
+      .update(schema.pageContents)
+      .set({ value, label, updatedAt: new Date() })
+      .where(eq(schema.pageContents.id, Number(req.params.id)))
+      .returning();
+    if (!row) return res.status(404).json({ message: 'Konten tidak ditemukan' });
+    res.json(row);
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST — Admin: seed konten default semua halaman
+app.post('/api/admin/page-contents/seed', async (_req, res) => {
+  try {
+    const defaultContents = [
+      // Beranda
+      { page: 'beranda', section: 'hero_title', label: 'Judul Utama Hero', value: 'Daftar Ulang SPMB SMKN 5 Kota Serang' },
+      { page: 'beranda', section: 'hero_subtitle', label: 'Subtitle / Deskripsi Hero', value: 'Selamat datang kepada calon peserta didik baru. Lengkapi proses daftar ulang Anda sesuai jadwal yang telah ditentukan.' },
+      { page: 'beranda', section: 'hero_button', label: 'Teks Tombol Hero', value: 'Mulai Daftar Ulang' },
+      { page: 'beranda', section: 'steps_title', label: 'Judul Seksi Alur Pendaftaran', value: 'Alur Daftar Ulang' },
+      { page: 'beranda', section: 'steps_desc', label: 'Deskripsi Seksi Alur', value: 'Ikuti langkah-langkah berikut untuk menyelesaikan proses daftar ulang Anda.' },
+      { page: 'beranda', section: 'step1_title', label: 'Langkah 1 - Judul', value: 'Verifikasi Kelulusan' },
+      { page: 'beranda', section: 'step1_desc', label: 'Langkah 1 - Deskripsi', value: 'Periksa status kelulusan Anda menggunakan NISN dan tanggal lahir.' },
+      { page: 'beranda', section: 'step2_title', label: 'Langkah 2 - Judul', value: 'Isi Formulir' },
+      { page: 'beranda', section: 'step2_desc', label: 'Langkah 2 - Deskripsi', value: 'Lengkapi data pribadi dan unggah dokumen yang diperlukan.' },
+      { page: 'beranda', section: 'step3_title', label: 'Langkah 3 - Judul', value: 'Simpan Bukti' },
+      { page: 'beranda', section: 'step3_desc', label: 'Langkah 3 - Deskripsi', value: 'Unduh dan simpan bukti daftar ulang sebagai konfirmasi.' },
+      { page: 'beranda', section: 'announcement_title', label: 'Judul Seksi Pengumuman', value: 'Pengumuman Terbaru' },
+      { page: 'beranda', section: 'map_title', label: 'Judul Seksi Peta', value: 'Lokasi SMKN 5 Kota Serang' },
+      { page: 'beranda', section: 'map_desc', label: 'Deskripsi Lokasi', value: 'Jl. Raya Pandeglang KM 3, Kota Serang, Banten' },
+      // Verifikasi
+      { page: 'verifikasi', section: 'page_title', label: 'Judul Halaman', value: 'Verifikasi Kelulusan' },
+      { page: 'verifikasi', section: 'page_desc', label: 'Deskripsi Halaman', value: 'Masukkan NISN dan tanggal lahir Anda untuk memverifikasi status kelulusan.' },
+      { page: 'verifikasi', section: 'nisn_label', label: 'Label Input NISN', value: 'Nomor Induk Siswa Nasional (NISN)' },
+      { page: 'verifikasi', section: 'nisn_placeholder', label: 'Placeholder NISN', value: 'Masukkan NISN Anda' },
+      { page: 'verifikasi', section: 'tgl_label', label: 'Label Tanggal Lahir', value: 'Tanggal Lahir' },
+      { page: 'verifikasi', section: 'button_text', label: 'Teks Tombol Verifikasi', value: 'Verifikasi Sekarang' },
+      { page: 'verifikasi', section: 'success_title', label: 'Judul Sukses', value: 'Selamat! Anda Dinyatakan Lulus' },
+      { page: 'verifikasi', section: 'fail_title', label: 'Judul Gagal', value: 'Data Tidak Ditemukan' },
+      // Daftar Ulang
+      { page: 'daftar-ulang', section: 'page_title', label: 'Judul Halaman', value: 'Formulir Daftar Ulang' },
+      { page: 'daftar-ulang', section: 'page_desc', label: 'Deskripsi Halaman', value: 'Lengkapi semua data di bawah ini dengan benar dan unggah dokumen yang diperlukan.' },
+      { page: 'daftar-ulang', section: 'submit_button', label: 'Teks Tombol Submit', value: 'Kirim Pendaftaran' },
+      { page: 'daftar-ulang', section: 'success_title', label: 'Judul Sukses', value: 'Pendaftaran Berhasil!' },
+      { page: 'daftar-ulang', section: 'success_desc', label: 'Deskripsi Sukses', value: 'Data Anda telah berhasil disimpan. Simpan nomor pendaftaran Anda.' },
+      // Bukti
+      { page: 'bukti', section: 'page_title', label: 'Judul Halaman Bukti', value: 'Bukti Daftar Ulang' },
+      { page: 'bukti', section: 'page_desc', label: 'Deskripsi', value: 'Berikut adalah bukti daftar ulang Anda. Simpan atau cetak dokumen ini.' },
+      { page: 'bukti', section: 'print_button', label: 'Teks Tombol Cetak', value: 'Cetak Bukti' },
+    ];
+
+    // Upsert: skip jika sudah ada
+    for (const item of defaultContents) {
+      const existing = await db.query.pageContents.findFirst({
+        where: (pc, { and, eq: eqFn }) => and(eqFn(pc.page, item.page), eqFn(pc.section, item.section)),
+      });
+      if (!existing) {
+        await db.insert(schema.pageContents).values(item);
+      }
+    }
+    res.json({ message: 'Seed konten halaman berhasil', total: defaultContents.length });
+  } catch (e: any) {
+    console.error('Seed page-contents error:', e.message);
+    res.status(500).json({ message: 'Server error', detail: e.message });
+  }
+});
+
+// ================================================================
+//  FORM QUESTIONS — Pertanyaan dinamis form daftar ulang
+// ================================================================
+
+// GET — Publik: ambil pertanyaan aktif untuk form daftar ulang
+app.get('/api/form-questions', async (_req, res) => {
+  try {
+    const rows = await db.query.formQuestions.findMany({
+      where: eq(schema.formQuestions.isActive, true),
+      orderBy: [asc(schema.formQuestions.sortOrder)],
+    });
+    res.json(rows);
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET — Admin: semua pertanyaan
+app.get('/api/admin/form-questions', async (_req, res) => {
+  try {
+    const rows = await db.query.formQuestions.findMany({
+      orderBy: [asc(schema.formQuestions.sortOrder)],
+    });
+    res.json(rows);
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST — Admin: tambah pertanyaan baru
+app.post('/api/admin/form-questions', async (req, res) => {
+  try {
+    const { section, fieldName, label, fieldType, placeholder, options, isRequired, isActive, sortOrder } = req.body;
+    if (!section || !fieldName || !label || !fieldType) {
+      return res.status(400).json({ message: 'section, fieldName, label, dan fieldType wajib diisi' });
+    }
+    const [row] = await db.insert(schema.formQuestions).values({
+      section, fieldName, label, fieldType,
+      placeholder: placeholder || null,
+      options: options || null,
+      isRequired: isRequired !== undefined ? isRequired : true,
+      isActive: isActive !== undefined ? isActive : true,
+      sortOrder: sortOrder || 0,
+    }).returning();
+    res.status(201).json(row);
+  } catch (e: any) {
+    if (e.message?.includes('unique')) {
+      return res.status(400).json({ message: 'Field name sudah digunakan' });
+    }
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT — Admin: update pertanyaan
+app.put('/api/admin/form-questions/:id', async (req, res) => {
+  try {
+    const { section, fieldName, label, fieldType, placeholder, options, isRequired, isActive, sortOrder } = req.body;
+    const [row] = await db
+      .update(schema.formQuestions)
+      .set({
+        section, fieldName, label, fieldType,
+        placeholder: placeholder || null,
+        options: options || null,
+        isRequired, isActive, sortOrder,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.formQuestions.id, Number(req.params.id)))
+      .returning();
+    if (!row) return res.status(404).json({ message: 'Pertanyaan tidak ditemukan' });
+    res.json(row);
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// DELETE — Admin: hapus pertanyaan
+app.delete('/api/admin/form-questions/:id', async (req, res) => {
+  try {
+    const [row] = await db
+      .delete(schema.formQuestions)
+      .where(eq(schema.formQuestions.id, Number(req.params.id)))
+      .returning();
+    if (!row) return res.status(404).json({ message: 'Pertanyaan tidak ditemukan' });
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT — Admin: reorder pertanyaan
+app.put('/api/admin/form-questions/reorder', async (req, res) => {
+  try {
+    const { items } = req.body as { items: { id: number; sortOrder: number }[] };
+    for (const item of items) {
+      await db
+        .update(schema.formQuestions)
+        .set({ sortOrder: item.sortOrder, updatedAt: new Date() })
+        .where(eq(schema.formQuestions.id, item.id));
+    }
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST — Admin: seed pertanyaan default
+app.post('/api/admin/form-questions/seed', async (_req, res) => {
+  try {
+    const defaults = [
+      // Data Pribadi
+      { section: 'dataPribadi', fieldName: 'nisn', label: 'NISN', fieldType: 'text', placeholder: 'Masukkan NISN 10 digit', isRequired: true, sortOrder: 1 },
+      { section: 'dataPribadi', fieldName: 'namaLengkap', label: 'Nama Lengkap', fieldType: 'text', placeholder: 'Nama lengkap sesuai akta', isRequired: true, sortOrder: 2 },
+      { section: 'dataPribadi', fieldName: 'tempatLahir', label: 'Tempat Lahir', fieldType: 'text', placeholder: 'Kota tempat lahir', isRequired: true, sortOrder: 3 },
+      { section: 'dataPribadi', fieldName: 'tanggalLahir', label: 'Tanggal Lahir', fieldType: 'date', placeholder: '', isRequired: true, sortOrder: 4 },
+      { section: 'dataPribadi', fieldName: 'jenisKelamin', label: 'Jenis Kelamin', fieldType: 'radio', options: ['Laki-laki', 'Perempuan'], isRequired: true, sortOrder: 5 },
+      { section: 'dataPribadi', fieldName: 'agama', label: 'Agama', fieldType: 'select', options: ['Islam', 'Protestan', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'], isRequired: true, sortOrder: 6 },
+      { section: 'dataPribadi', fieldName: 'alamatLengkap', label: 'Alamat Lengkap', fieldType: 'textarea', placeholder: 'Alamat lengkap sesuai KK', isRequired: true, sortOrder: 7 },
+      { section: 'dataPribadi', fieldName: 'asalSekolah', label: 'Asal Sekolah', fieldType: 'text', placeholder: 'Nama SMP/MTs asal', isRequired: true, sortOrder: 8 },
+      // Data Orang Tua
+      { section: 'dataOrangTua', fieldName: 'namaOrangTua', label: 'Nama Orang Tua / Wali', fieldType: 'text', placeholder: 'Nama lengkap orang tua', isRequired: true, sortOrder: 9 },
+      { section: 'dataOrangTua', fieldName: 'pekerjaanOrangTua', label: 'Pekerjaan Orang Tua', fieldType: 'text', placeholder: 'Pekerjaan orang tua', isRequired: true, sortOrder: 10 },
+      { section: 'dataOrangTua', fieldName: 'noTelpOrangTua', label: 'No. Telp Orang Tua', fieldType: 'text', placeholder: '08xxxxxxxxxx', isRequired: true, sortOrder: 11 },
+      // Akademik
+      { section: 'akademik', fieldName: 'pilihanJurusan1', label: 'Pilihan Jurusan 1', fieldType: 'select', options: [], isRequired: true, sortOrder: 12 },
+      { section: 'akademik', fieldName: 'pilihanJurusan2', label: 'Pilihan Jurusan 2', fieldType: 'select', options: [], isRequired: true, sortOrder: 13 },
+    ];
+
+    let seeded = 0;
+    for (const item of defaults) {
+      const existing = await db.query.formQuestions.findFirst({
+        where: eq(schema.formQuestions.fieldName, item.fieldName),
+      });
+      if (!existing) {
+        await db.insert(schema.formQuestions).values({
+          ...item,
+          options: item.options && item.options.length > 0 ? item.options : null,
+          isActive: true,
+        });
+        seeded++;
+      }
+    }
+    res.json({ message: 'Seed pertanyaan berhasil', seeded });
+  } catch (e: any) {
+    console.error('Seed form-questions error:', e.message);
+    res.status(500).json({ message: 'Server error', detail: e.message });
+  }
+});
+
+// ================================================================
+
 export default app;
 
 if (process.env.VERCEL !== '1') {

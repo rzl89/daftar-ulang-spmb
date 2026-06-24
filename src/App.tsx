@@ -25,6 +25,8 @@ const LogAktivitas = React.lazy(() => import("@/pages/admin/LogAktivitas"));
 const Pengaturan = React.lazy(() => import("@/pages/admin/Pengaturan"));
 const KelolaJurusan = React.lazy(() => import("@/pages/admin/KelolaJurusan"));
 const KelolaLandingPage = React.lazy(() => import("@/pages/admin/KelolaLandingPage"));
+const KelolaKonten = React.lazy(() => import("@/pages/admin/KelolaKonten"));
+const KelolaPertanyaan = React.lazy(() => import("@/pages/admin/KelolaPertanyaan"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -72,6 +74,8 @@ function AppLayout() {
               <Route path="pengumuman" element={<Pengumuman />} />
               <Route path="jurusan" element={<KelolaJurusan />} />
               <Route path="landing-page" element={<KelolaLandingPage />} />
+              <Route path="konten" element={<KelolaKonten />} />
+              <Route path="pertanyaan" element={<KelolaPertanyaan />} />
               <Route path="laporan" element={<Laporan />} />
               <Route path="pengaturan" element={<Pengaturan />} />
               <Route path="aktivitas" element={<LogAktivitas />} />

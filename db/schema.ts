@@ -113,3 +113,29 @@ export const landingPageBlocks = pgTable('landing_page_blocks', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+// ===================== PAGE CONTENTS TABLE =====================
+export const pageContents = pgTable('page_contents', {
+  id: serial('id').primaryKey(),
+  page: varchar('page', { length: 50 }).notNull(),        // 'beranda', 'verifikasi', 'daftar-ulang', 'bukti'
+  section: varchar('section', { length: 100 }).notNull(), // 'hero_title', 'hero_desc', dll.
+  label: varchar('label', { length: 200 }),               // Label deskriptif untuk admin
+  value: text('value').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// ===================== FORM QUESTIONS TABLE =====================
+export const formQuestions = pgTable('form_questions', {
+  id: serial('id').primaryKey(),
+  section: varchar('section', { length: 100 }).notNull(),      // 'dataPribadi', 'dataOrangTua', 'akademik', 'dokumen'
+  fieldName: varchar('field_name', { length: 100 }).notNull().unique(), // key unik field
+  label: varchar('label', { length: 200 }).notNull(),          // Teks label / pertanyaan
+  fieldType: varchar('field_type', { length: 50 }).notNull(),  // 'text','select','date','textarea','radio'
+  placeholder: varchar('placeholder', { length: 200 }),
+  options: jsonb('options').$type<string[]>(),                 // Untuk select/radio
+  isRequired: boolean('is_required').default(true).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});

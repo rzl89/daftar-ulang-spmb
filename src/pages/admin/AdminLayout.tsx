@@ -18,7 +18,9 @@ import {
   Shield,
   ChevronLeft,
   FileSpreadsheet,
-  BookOpen
+  BookOpen,
+  FileText,
+  HelpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -32,6 +34,8 @@ const menuItems = [
   { path: '/admin/pengumuman', label: 'Pengumuman', icon: Megaphone },
   { path: '/admin/jurusan', label: 'Kelola Jurusan', icon: BookOpen },
   { path: '/admin/landing-page', label: 'Kelola Landing Page', icon: Layout },
+  { path: '/admin/konten', label: 'Kelola Konten', icon: FileText },
+  { path: '/admin/pertanyaan', label: 'Kelola Pertanyaan', icon: HelpCircle },
   { path: '/admin/laporan', label: 'Laporan', icon: BarChart3 },
   { path: '/admin/aktivitas', label: 'Log Aktivitas', icon: History },
   { path: '/admin/pengaturan', label: 'Pengaturan', icon: Settings },
