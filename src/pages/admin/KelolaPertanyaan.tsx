@@ -289,7 +289,10 @@ export default function KelolaPertanyaan() {
   };
 
   const openNew = () => {
-    setEditingQ(emptyQuestion());
+    setEditingQ({
+      ...emptyQuestion(),
+      section: filterSection === 'all' ? 'dataPribadi' : filterSection
+    });
     setOptionInput('');
     setIsModalOpen(true);
   };
