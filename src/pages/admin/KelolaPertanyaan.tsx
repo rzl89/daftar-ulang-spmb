@@ -44,6 +44,7 @@ const FIELD_TYPES = [
   { value: 'number', label: 'Angka' },
   { value: 'email', label: 'Email' },
   { value: 'tel', label: 'No. Telepon' },
+  { value: 'file', label: 'Upload Berkas / File' },
 ];
 
 const SECTION_COLORS: Record<string, string> = {
@@ -62,6 +63,7 @@ const TYPE_COLORS: Record<string, string> = {
   number: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   email: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
   tel: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  file: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
 };
 
 // ─── Sortable Row ───────────────────────────────────────────────────────────
