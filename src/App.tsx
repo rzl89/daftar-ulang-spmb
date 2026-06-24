@@ -43,19 +43,28 @@ function AppLayout() {
   }, [location.pathname]);
 
   // Fetch global settings once
-  const { fetchSettings, theme_color_primary, theme_color_secondary } = useSettingsStore();
+  const fetchSettings = useSettingsStore(s => s.fetchSettings);
+  const theme_color_primary = useSettingsStore(s => s.theme_color_primary);
+  const theme_color_secondary = useSettingsStore(s => s.theme_color_secondary);
+  
   React.useEffect(() => {
     fetchSettings();
-  }, [fetchSettings]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Apply dynamic theme colors
   React.useEffect(() => {
     const root = document.documentElement;
     if (theme_color_primary) {
       root.style.setProperty('--app-primary', theme_color_primary);
+      // Keep light/dark variants in sync (simplified)
+      root.style.setProperty('--app-primary-light', theme_color_primary);
+      root.style.setProperty('--app-primary-dark', theme_color_primary);
     }
     if (theme_color_secondary) {
       root.style.setProperty('--app-accent', theme_color_secondary);
+      root.style.setProperty('--app-accent-light', theme_color_secondary);
+      root.style.setProperty('--app-accent-dark', theme_color_secondary);
     }
   }, [theme_color_primary, theme_color_secondary]);
 

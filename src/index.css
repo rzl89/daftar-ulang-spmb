@@ -2,18 +2,22 @@
 @import "tailwindcss";
 :root {
   --app-primary: #1A237E;
+  --app-primary-light: #3949AB;
+  --app-primary-dark: #0D1757;
   --app-accent: #F9A825;
+  --app-accent-light: #FDD835;
+  --app-accent-dark: #C17900;
 }
 
 @theme {
   --color-primary: var(--app-primary);
-  --color-primary-light: color-mix(in srgb, var(--app-primary) 80%, white);
-  --color-primary-dark: color-mix(in srgb, var(--app-primary) 80%, black);
+  --color-primary-light: var(--app-primary-light);
+  --color-primary-dark: var(--app-primary-dark);
   --color-primary-foreground: #ffffff;
 
   --color-accent: var(--app-accent);
-  --color-accent-light: color-mix(in srgb, var(--app-accent) 80%, white);
-  --color-accent-dark: color-mix(in srgb, var(--app-accent) 80%, black);
+  --color-accent-light: var(--app-accent-light);
+  --color-accent-dark: var(--app-accent-dark);
   --color-accent-foreground: #000000;
 
   --color-background: #f8fafc;
