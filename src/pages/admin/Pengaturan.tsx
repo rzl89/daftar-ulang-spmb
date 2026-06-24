@@ -79,8 +79,9 @@ export default function Pengaturan() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setSettings(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked.toString() : value
