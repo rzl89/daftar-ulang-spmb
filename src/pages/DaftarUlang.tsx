@@ -119,43 +119,75 @@ export default function DaftarUlang() {
     }
 
     setIsSubmitting(true);
+    setUploadProgress(10);
     
-    // Simulate Upload Progress visually
-    let progress = 0;
-    const interval = setInterval(async () => {
-      progress += 25;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
+    try {
+      // 1. Upload files to Cloudinary
+      const dokumen: Record<string, string> = {};
+      const cloudName = 'djdimzxom';
+      const apiKey = '988216935877547';
+
+      // Get signature from our backend
+      const signRes = await fetch('/api/cloudinary/sign');
+      if (!signRes.ok) throw new Error("Gagal mengambil signature upload");
+      const { timestamp, signature } = await signRes.json();
+
+      const totalFiles = Object.keys(files).length;
+      let uploadedCount = 0;
+
+      for (const [docName, file] of Object.entries(files)) {
+        if (!file) continue;
+
+        const formData = new window.FormData();
+        formData.append('file', file);
+        formData.append('api_key', apiKey);
+        formData.append('timestamp', timestamp.toString());
+        formData.append('signature', signature);
+
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!uploadRes.ok) throw new Error(`Gagal mengunggah ${docName}`);
         
-        try {
-          // If we had a real backend for files, we would use FormData here
-          // const formDataToSend = new window.FormData();
-          // Object.entries(files).forEach(([key, file]) => {
-          //   if (file) formDataToSend.append(key, file);
-          // });
-          
-          const res = await fetch('/api/registrations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data) // for now, we just simulate success with the JSON payload
-          });
-          
-          const result = await res.json();
-          setIsSubmitting(false);
-          
-          if (res.ok) {
-            toast.success("Pendaftaran berhasil disimpan!");
-            navigate(`/bukti-daftar-ulang?nisn=${result.nisn}`);
-          } else {
-            toast.error(result.message || "Gagal menyimpan pendaftaran");
-          }
-        } catch (error) {
-          setIsSubmitting(false);
-          toast.error("Gagal terhubung ke server. Periksa koneksi Anda.");
-        }
+        const uploadData = await uploadRes.json();
+        
+        let schemaKey = docName;
+        if (docName === "Surat Keterangan Lulus (SKL)") schemaKey = "ijazahUrl";
+        else if (docName === "Kartu Keluarga (KK)") schemaKey = "kartuKeluargaUrl";
+        else if (docName === "Akta Kelahiran") schemaKey = "aktaKelahiranUrl";
+        
+        dokumen[schemaKey] = uploadData.secure_url;
+        
+        uploadedCount++;
+        setUploadProgress(10 + Math.round((uploadedCount / totalFiles) * 70));
       }
-    }, 300);
+
+      // 2. Submit to our Vercel backend
+      const payload = { ...data, dokumen };
+      setUploadProgress(90);
+      
+      const res = await fetch('/api/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await res.json();
+      setUploadProgress(100);
+      setIsSubmitting(false);
+      
+      if (res.ok) {
+        toast.success("Pendaftaran berhasil disimpan!");
+        navigate(`/bukti-daftar-ulang?nisn=${result.nisn}`);
+      } else {
+        toast.error(result.message || "Gagal menyimpan pendaftaran");
+      }
+    } catch (error: any) {
+      setIsSubmitting(false);
+      toast.error(error.message || "Gagal terhubung ke server. Periksa koneksi Anda.");
+    }
   };
 
   const handleFileChange = (docName: string, e: React.ChangeEvent<HTMLInputElement>) => {

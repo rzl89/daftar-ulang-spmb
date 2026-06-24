@@ -5,6 +5,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './db/schema.js';
 import { eq, desc, asc, count, sql, like } from 'drizzle-orm';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -14,6 +15,25 @@ app.use(express.json());
 
 const sql_client = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql_client, { schema });
+
+// ================================================================
+//  CLOUDINARY UPLOAD SIGNATURE
+// ================================================================
+app.get('/api/cloudinary/sign', (req, res) => {
+  try {
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    // API Secret dari User
+    const apiSecret = 'K0e3RCyeB7OeKQkKZQDbmtKQyDc';
+    
+    // Cloudinary signature = sha1("timestamp=" + timestamp + apiSecret)
+    const signature = crypto.createHash('sha1').update(`timestamp=${timestamp}${apiSecret}`).digest('hex');
+    
+    res.json({ timestamp, signature });
+  } catch (error) {
+    console.error('Error generating signature', error);
+    res.status(500).json({ message: 'Error generating signature' });
+  }
+});
 
 // ================================================================
 //  HEALTH CHECK
@@ -86,6 +106,7 @@ app.post('/api/registrations', async (req, res) => {
       pilihanJurusan1: data.dataAkademik?.jurusanPilihan1 || '',
       pilihanJurusan2: data.dataAkademik?.jurusanPilihan2 || '',
       status: 'MENUNGGU_VERIFIKASI',
+      dokumen: data.dokumen || null,
     }).returning();
 
     console.log(`✅ Pendaftaran: ${registrationId} — ${data.dataPribadi.namaLengkap}`);
