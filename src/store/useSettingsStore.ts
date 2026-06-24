@@ -13,6 +13,9 @@ interface SettingsState {
   is_registration_open: string;
   quota: string;
   registration_deadline: string;
+  school_logo: string;
+  theme_color_primary: string;
+  theme_color_secondary: string;
 
   // Status
   isLoaded: boolean;
@@ -35,6 +38,9 @@ const DEFAULTS: Omit<SettingsState, 'isLoaded' | 'fetchSettings' | 'getSetting'>
   is_registration_open: 'true',
   quota: '320',
   registration_deadline: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+  school_logo: '/Logo SKEMA.png',
+  theme_color_primary: '#1A237E',
+  theme_color_secondary: '#F9A825',
 };
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({

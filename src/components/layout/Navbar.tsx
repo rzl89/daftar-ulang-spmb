@@ -12,6 +12,7 @@ export function Navbar() {
   const location = useLocation();
   const schoolName = useSettingsStore(s => s.getSetting('school_name'));
   const schoolYear = useSettingsStore(s => s.getSetting('school_year'));
+  const schoolLogo = useSettingsStore(s => s.getSetting('school_logo'));
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -39,9 +40,13 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16 md:h-18">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow">
-              <GraduationCap className="h-6 w-6 text-accent" />
-            </div>
+            {schoolLogo ? (
+              <img src={schoolLogo} alt="Logo" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow">
+                <GraduationCap className="h-6 w-6 text-accent" />
+              </div>
+            )}
             <div className="hidden sm:block">
               <h1 className="text-sm font-bold text-primary leading-tight tracking-tight">
                 {schoolName}

@@ -1,15 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
+:root {
+  --app-primary: #1A237E;
+  --app-accent: #F9A825;
+}
 
 @theme {
-  --color-primary: #1A237E;
-  --color-primary-light: #283593;
-  --color-primary-dark: #000051;
+  --color-primary: var(--app-primary);
+  --color-primary-light: color-mix(in srgb, var(--app-primary) 80%, white);
+  --color-primary-dark: color-mix(in srgb, var(--app-primary) 80%, black);
   --color-primary-foreground: #ffffff;
 
-  --color-accent: #F9A825;
-  --color-accent-light: #FDD835;
-  --color-accent-dark: #C17900;
+  --color-accent: var(--app-accent);
+  --color-accent-light: color-mix(in srgb, var(--app-accent) 80%, white);
+  --color-accent-dark: color-mix(in srgb, var(--app-accent) 80%, black);
   --color-accent-foreground: #000000;
 
   --color-background: #f8fafc;

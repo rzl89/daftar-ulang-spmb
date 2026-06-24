@@ -43,10 +43,21 @@ function AppLayout() {
   }, [location.pathname]);
 
   // Fetch global settings once
-  const fetchSettings = useSettingsStore(s => s.fetchSettings);
+  const { fetchSettings, theme_color_primary, theme_color_secondary } = useSettingsStore();
   React.useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
+
+  // Apply dynamic theme colors
+  React.useEffect(() => {
+    const root = document.documentElement;
+    if (theme_color_primary) {
+      root.style.setProperty('--app-primary', theme_color_primary);
+    }
+    if (theme_color_secondary) {
+      root.style.setProperty('--app-accent', theme_color_secondary);
+    }
+  }, [theme_color_primary, theme_color_secondary]);
 
   return (
     <div className="flex flex-col min-h-screen">

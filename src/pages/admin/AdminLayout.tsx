@@ -46,6 +46,7 @@ export default function AdminLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const schoolName = useSettingsStore(s => s.getSetting('school_name'));
+  const schoolLogo = useSettingsStore(s => s.getSetting('school_logo'));
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -90,9 +91,13 @@ export default function AdminLayout() {
       {/* Logo Area */}
       <div className={`flex items-center justify-between p-4 border-b border-slate-700/50 ${!isSidebarOpen && 'justify-center'}`}>
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="p-1.5 bg-accent rounded-lg shrink-0 shadow-lg shadow-accent/20">
-            <Shield className="w-6 h-6 text-primary" />
-          </div>
+          {schoolLogo ? (
+            <img src={schoolLogo} alt="Logo" className="w-8 h-8 object-contain shrink-0 drop-shadow-md" />
+          ) : (
+            <div className="p-1.5 bg-accent rounded-lg shrink-0 shadow-lg shadow-accent/20">
+              <Shield className="w-6 h-6 text-primary" />
+            </div>
+          )}
           {isSidebarOpen && (
             <motion.div
               initial={{ opacity: 0, width: 0 }}
