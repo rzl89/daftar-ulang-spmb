@@ -14,7 +14,7 @@ import {
 import { Button, Card, CardContent, FlipClock } from "@/components/ui";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useLandingBlocks } from "@/hooks";
-import parse from "html-react-parser";
+
 
 export default function Beranda() {
   const { blocks, loading } = useLandingBlocks();
@@ -210,9 +210,10 @@ export default function Beranda() {
 
   const renderCustomText = (block: any) => (
     <section key={block.id} className="py-16 px-6 md:px-8 w-full">
-      <div className="max-w-4xl mx-auto prose prose-slate md:prose-lg text-slate-700">
-        {parse(block.content?.html || '')}
-      </div>
+      <div
+        className="max-w-4xl mx-auto prose prose-slate md:prose-lg text-slate-700"
+        dangerouslySetInnerHTML={{ __html: block.content?.html || '' }}
+      />
     </section>
   );
 
