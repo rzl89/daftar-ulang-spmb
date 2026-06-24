@@ -1,197 +1,162 @@
-# Portal SPMB — Sistem Penerimaan & Daftar Ulang Siswa Baru
+<div align="center">
+  <img src="public/Logo%20SKEMA.png" alt="Logo" width="120" />
+  
+  # SPMB Registration Platform 🚀
+  
+  **Sistem Penerimaan & Daftar Ulang Siswa Baru Modern, Cepat, dan Dinamis**
+  
+  [![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
+  [![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+  [![Neon DB](https://img.shields.io/badge/Neon_Postgres-00E599?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)
 
-Portal digital lengkap untuk mengelola proses Seleksi Penerimaan Murid Baru (SPMB), daftar ulang online, dan manajemen data peserta didik baru. Dirancang **multi-tenant** sehingga satu codebase dapat digunakan oleh banyak sekolah dengan konfigurasi terpisah.
-
----
-
-## 🌟 Arsitektur & Tech Stack
-
-| Layer        | Teknologi                                                                 |
-|--------------|---------------------------------------------------------------------------|
-| **Frontend** | React 19, Vite, Tailwind CSS 4, Framer Motion, dnd-kit (Drag-and-Drop)   |
-| **Backend**  | Node.js + Express (file `server.ts`) — juga mendukung Vercel Serverless   |
-| **Database** | PostgreSQL (Neon / Supabase / Vercel Postgres)                            |
-| **ORM**      | Drizzle ORM + Drizzle Kit                                                 |
-| **Deploy**   | Vercel                                                                    |
-
----
-
-## 📦 Fitur Utama
-
-### Halaman Publik (Pengunjung / Calon Siswa)
-- **Beranda Dinamis** — Konten halaman utama dikelola dari Panel Admin (blok-blok yang bisa diatur urutannya).
-- **Countdown Timer** — Hitung mundur otomatis menuju batas waktu daftar ulang.
-- **Verifikasi Kelulusan** — Calon siswa memasukkan NISN + tanggal lahir untuk cek status kelulusan SPMB.
-- **Formulir Daftar Ulang** — Form multi-step: data pribadi, data akademik, data orang tua, dan upload berkas.
-- **Cetak Bukti Daftar Ulang** — Setelah registrasi berhasil, siswa dapat mencetak lembar bukti pendaftaran.
-- **Peta Lokasi & Kontak** — Embed Google Maps dan informasi kontak sekolah.
-
-### Panel Admin (`/admin`)
-- **Dashboard** — Statistik ringkasan: total pendaftar, sudah daftar ulang, menunggu verifikasi, ditolak.
-- **Data Peserta** — Tabel lengkap semua pendaftar. Admin bisa memfilter, melihat detail, dan menghapus data.
-- **Data Kelulusan** — Upload data kelulusan via file CSV/Excel (bulk insert). Reset data kelulusan.
-- **Verifikasi Berkas** — Ubah status pendaftaran: `MENUNGGU_VERIFIKASI` → `DITERIMA` / `DITOLAK`.
-- **Pengumuman** — CRUD pengumuman dengan kategori dan status publikasi.
-- **Kelola Jurusan** — CRUD jurusan/program keahlian (kode, nama, kuota, urutan, aktif/nonaktif).
-- **Kelola Landing Page (Baru!)** — Drag-and-drop builder untuk mengatur konten halaman Beranda:
-  - **Blok Hero** — Banner utama dengan countdown.
-  - **Blok Alur Pendaftaran (Steps)** — Langkah-langkah daftar ulang.
-  - **Blok Peta & Kontak (Map)** — Informasi lokasi & kontak sekolah.
-  - **Blok Teks Custom** — Konten HTML bebas yang bisa diedit admin.
-  - **Blok Gambar** — Upload gambar via URL.
-  - Admin bisa **mengaktifkan/menonaktifkan**, **mengurutkan ulang** (drag-and-drop), dan **mengedit konten** setiap blok.
-- **Laporan** — Ekspor dan ringkasan data pendaftaran.
-- **Log Aktivitas** — Riwayat tindakan admin (audit trail).
-- **Pengaturan** — Konfigurasi: nama sekolah, tahun ajaran, alamat, kontak, batas waktu daftar ulang, password admin.
+  *Platform terpadu untuk mengelola seluruh siklus penerimaan siswa baru, mulai dari pengumuman kelulusan, formulir pendaftaran ulang dinamis, hingga verifikasi berkas.*
+</div>
 
 ---
 
-## 🗄 Skema Database (Drizzle ORM)
+## 🌟 Overview
 
-Semua tabel didefinisikan di `db/schema.ts`:
+SPMB Registration Platform adalah solusi *end-to-end* yang dirancang untuk mendigitalkan proses daftar ulang sekolah atau institusi pendidikan. Dibangun dengan *tech stack* modern, platform ini memberikan pengalaman yang sangat responsif bagi pendaftar dan kontrol penuh bagi administrator melalui *dashboard* interaktif.
 
-| Tabel                  | Deskripsi                                                              |
-|------------------------|------------------------------------------------------------------------|
-| `registrations`        | Data pendaftaran siswa (NISN, nama, jurusan pilihan, status, dsb.)     |
-| `passed_students`      | Data kelulusan SPMB (diupload via CSV)                                 |
-| `settings`             | Pengaturan sistem key-value (nama sekolah, password admin, dsb.)       |
-| `announcements`        | Pengumuman dengan kategori dan status publikasi                        |
-| `jurusan`              | Daftar jurusan/program keahlian                                        |
-| `landing_page_blocks`  | Blok konten landing page (type, content JSON, sort order, is_active)   |
-| `activity_logs`        | Log aktivitas admin                                                    |
+Mengucapkan selamat tinggal pada formulir kertas dan proses manual yang memakan waktu.
 
 ---
 
-## 🔌 API Endpoints
+## ✨ Features Showcase
 
-### Publik (Tanpa Autentikasi)
+### 1. 🏠 Dynamic Landing Page
+Halaman depan yang sepenuhnya dapat dikustomisasi langsung dari panel admin. Tanpa perlu *coding* untuk mengubah teks, gambar, atau struktur informasi sekolah.
+<p align="center">
+  <img src="docs/screenshots/01-landing-page.png" alt="Landing Page Preview" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+  <br><i>*(Screenshot: Halaman utama publik dengan desain modern dan responsif)*</i>
+</p>
 
-| Method | Endpoint                  | Deskripsi                                   |
-|--------|---------------------------|---------------------------------------------|
-| GET    | `/api/health`             | Health check                                |
-| GET    | `/api/settings`           | Ambil pengaturan publik (tanpa password)     |
-| GET    | `/api/jurusan`            | Daftar jurusan aktif                         |
-| GET    | `/api/landing-blocks`     | Daftar blok landing page aktif (sorted)      |
-| GET    | `/api/registrations/:nisn`| Cek status pendaftaran berdasarkan NISN      |
-| POST   | `/api/registrations`      | Submit pendaftaran baru                      |
-| POST   | `/api/verifikasi`         | Verifikasi kelulusan (NISN + tanggal lahir)  |
+### 2. 🔍 Real-time Verification & Status Check
+Siswa dapat mengecek status kelulusan mereka secara instan menggunakan Nomor Peserta atau NISN. Sistem akan memberikan informasi *real-time* mengenai hasil seleksi.
+<p align="center">
+  <img src="docs/screenshots/02-cek-kelulusan.png" alt="Cek Kelulusan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+  <br><i>*(Screenshot: Halaman cek status kelulusan peserta)*</i>
+</p>
 
-### Admin
+### 3. 📝 Dynamic Form Builder
+Fitur unggulan di mana Admin dapat **membuat, mengedit, dan menyusun ulang (Drag & Drop)** pertanyaan formulir pendaftaran. Mendukung berbagai tipe input (Teks, Pilihan Ganda, Tanggal, hingga Upload Dokumen).
+<p align="center">
+  <img src="docs/screenshots/03-form-builder.png" alt="Dynamic Form Builder" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+  <br><i>*(Screenshot: Admin panel dengan antarmuka drag & drop untuk menyusun formulir)*</i>
+</p>
 
-| Method | Endpoint                              | Deskripsi                          |
-|--------|---------------------------------------|------------------------------------|
-| POST   | `/api/admin/login`                    | Login admin (password check)       |
-| GET    | `/api/admin/stats`                    | Statistik dashboard                |
-| GET    | `/api/admin/registrations`            | Semua data pendaftaran             |
-| PUT    | `/api/admin/registrations/:id`        | Update status pendaftaran          |
-| DELETE | `/api/admin/registrations/:id`        | Hapus data pendaftaran             |
-| GET    | `/api/admin/settings`                 | Semua pengaturan (termasuk sensitif)|
-| PUT    | `/api/admin/settings/:key`            | Upsert pengaturan                  |
-| GET    | `/api/admin/jurusan`                  | Semua jurusan (termasuk nonaktif)  |
-| POST   | `/api/admin/jurusan`                  | Tambah jurusan                     |
-| PUT    | `/api/admin/jurusan/:id`              | Edit jurusan                       |
-| DELETE | `/api/admin/jurusan/:id`              | Hapus jurusan                      |
-| GET    | `/api/admin/landing-blocks`           | Semua blok landing page            |
-| POST   | `/api/admin/landing-blocks`           | Tambah blok baru                   |
-| PUT    | `/api/admin/landing-blocks/:id`       | Edit blok                          |
-| PUT    | `/api/admin/landing-blocks/reorder`   | Reorder blok (drag-and-drop)       |
-| DELETE | `/api/admin/landing-blocks/:id`       | Hapus blok                         |
-| GET    | `/api/admin/passed-students`          | Semua data kelulusan               |
-| POST   | `/api/admin/passed-students/bulk`     | Bulk insert data kelulusan (CSV)   |
-| DELETE | `/api/admin/passed-students`          | Reset semua data kelulusan         |
-| GET    | `/api/admin/announcements`            | Semua pengumuman                   |
-| POST   | `/api/admin/announcements`            | Tambah pengumuman                  |
-| PUT    | `/api/admin/announcements/:id`        | Edit pengumuman                    |
-| DELETE | `/api/admin/announcements/:id`        | Hapus pengumuman                   |
-| GET    | `/api/admin/logs`                     | 50 log aktivitas terbaru           |
-| POST   | `/api/admin/logs`                     | Catat log aktivitas                |
-| POST   | `/api/admin/seed`                     | Seed data default                  |
+### 4. ☁️ Seamless Cloud Document Upload
+Terintegrasi langsung dengan **Cloudinary**. Peserta dapat mengunggah berkas persyaratan (seperti Kartu Keluarga, Ijazah, dll) dengan cepat dan aman tanpa membebani server lokal.
+<p align="center">
+  <img src="docs/screenshots/04-upload-dokumen.png" alt="Cloud Upload" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+  <br><i>*(Screenshot: Tampilan antarmuka upload dokumen oleh peserta)*</i>
+</p>
 
----
+### 5. 📄 Automatic PDF & QR Code Generation
+Setelah berhasil mendaftar ulang, sistem secara otomatis menghasilkan **Bukti Daftar Ulang dalam format PDF** yang dilengkapi dengan **QR Code** unik untuk kemudahan verifikasi fisik oleh panitia.
+<p align="center">
+  <img src="docs/screenshots/05-bukti-pdf.png" alt="Bukti PDF & QR Code" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+  <br><i>*(Screenshot: Hasil cetak bukti daftar ulang dengan QR Code)*</i>
+</p>
 
-## 📋 Prasyarat
+### 6. 📊 Interactive Admin Dashboard & Analytics
+Pusat komando bagi panitia. Memantau statistik pendaftar harian, kuota jurusan, dan status verifikasi melalui grafik interaktif yang memanjakan mata.
+<p align="center">
+  <img src="docs/screenshots/06-dashboard-admin.png" alt="Admin Dashboard" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+  <br><i>*(Screenshot: Dashboard statistik dan analitik)*</i>
+</p>
 
-1. **Node.js** ≥ 18
-2. **npm** ≥ 9
-3. Akun **GitHub**, **Vercel**, dan penyedia **PostgreSQL** (Neon/Supabase)
+### 7. ✅ One-Click Verification System
+Panitia dapat memverifikasi berkas yang diunggah peserta dalam satu klik. Peserta akan langsung melihat perubahan status (*Diterima/Ditolak/Menunggu*) di portal mereka.
+<p align="center">
+  <img src="docs/screenshots/07-verifikasi-berkas.png" alt="Sistem Verifikasi" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+  <br><i>*(Screenshot: Antarmuka verifikasi berkas oleh admin)*</i>
+</p>
 
----
-
-## 🛠 Instalasi & Pengembangan Lokal
-
-```bash
-# 1. Clone repository
-git clone https://github.com/[username]/daftar-ulang-spmb.git
-cd daftar-ulang-spmb
-
-# 2. Install dependencies
-npm install
-
-# 3. Buat file .env
-echo "DATABASE_URL=postgresql://[user]:[password]@[host]:[port]/[db_name]?sslmode=require" > .env
-
-# 4. Push skema database
-npm run push
-
-# 5. Seed data awal (opsional — jalankan sekali setelah tabel dibuat)
-# Panggil endpoint: POST http://localhost:3000/api/admin/seed
-
-# 6. Jalankan server backend (development)
-npx tsx server.ts
-
-# 7. Jalankan frontend (di terminal terpisah)
-npm run dev
-```
+### 8. 📈 Excel Reporting & Export
+Butuh data untuk rekapitulasi luring? Ekspor semua data pendaftar dan status verifikasi ke dalam format Excel (.xlsx) hanya dengan satu tombol.
+<p align="center">
+  <img src="docs/screenshots/08-laporan-excel.png" alt="Export Laporan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+  <br><i>*(Screenshot: Menu laporan dan rekapitulasi data)*</i>
+</p>
 
 ---
 
-## 🚀 Deployment ke Vercel
+## 🛠️ Tech Stack
 
-1. **Push ke GitHub** — Pastikan source code sudah di repository.
-2. **Import di Vercel** — Login ke [vercel.com](https://vercel.com), klik *Add New > Project*, pilih repo.
-3. **Set Environment Variable:**
-   - `DATABASE_URL` = Connection String PostgreSQL Anda.
-4. **Deploy** — Klik Deploy. Build otomatis dalam 1-3 menit.
-5. **Domain Kustom (opsional):**
-   - Di Vercel > Settings > Domains, tambahkan domain (contoh: `spmb.smkn5serang.sch.id`).
-   - Ikuti instruksi DNS yang diberikan Vercel.
+Platform ini mengadopsi tumpukan teknologi paling modern untuk menjamin performa, keamanan, dan skalabilitas.
 
----
-
-## 🔐 Operasional Panel Admin
-
-1. **Akses:** Buka `https://[domain-anda]/admin`
-2. **Login:** Password default ada di tabel `settings` (key: `admin_password`) atau di `server.ts`. **Segera ubah setelah login pertama.**
-3. **Langkah Awal:**
-   - Isi Pengaturan Sistem (nama sekolah, tahun ajaran, kontak, batas waktu daftar ulang).
-   - Kelola Jurusan.
-   - Upload Data Kelulusan (CSV).
-   - Atur Landing Page sesuai kebutuhan.
-   - Buat Pengumuman.
+- **Frontend:** React 18, Vite, TypeScript
+- **Styling:** Tailwind CSS, Radix UI, Framer Motion (untuk animasi halus)
+- **Backend / API:** Express.js (Deployed as Serverless Functions di Vercel)
+- **Database:** PostgreSQL (Hosted on Neon.tech)
+- **ORM:** Drizzle ORM
+- **State Management:** Zustand
+- **Media Storage:** Cloudinary
+- **PDF/Print:** html2canvas, jspdf
 
 ---
 
-## 🐛 Troubleshooting
+## 🚀 Quick Start (Local Setup)
 
-| Masalah                           | Solusi                                                                 |
-|-----------------------------------|------------------------------------------------------------------------|
-| Countdown timer tidak berjalan    | Isi "Batas Waktu Daftar Ulang" di Pengaturan dengan format tanggal valid |
-| Data peserta tidak tersimpan      | Cek `DATABASE_URL` dan pastikan tabel terbuat di database              |
-| Gagal upload berkas               | Pastikan koneksi stabil, file tidak melebihi 2MB                       |
-| Landing page kosong               | Tambahkan blok di menu Kelola Landing Page atau biarkan kosong (default akan tampil) |
+Ingin mencoba atau mengembangkan platform ini secara lokal? Ikuti langkah-langkah berikut:
+
+### Prerequisites
+- Node.js (v18 atau lebih baru)
+- Git
+- Akun Neon Database (PostgreSQL)
+- Akun Cloudinary (untuk penyimpanan berkas)
+
+### Installation
+
+1. **Clone repositori ini**
+   ```bash
+   git clone https://github.com/rzl89/daftar-ulang-spmb.git
+   cd daftar-ulang-spmb
+   ```
+
+2. **Install dependensi**
+   ```bash
+   npm install
+   ```
+
+3. **Atur Environment Variables**
+   Buat file `.env` di *root directory* dan isi dengan kredensial Anda:
+   ```env
+   # Database Configuration (Neon)
+   DATABASE_URL="postgresql://user:password@ep-xxx.neon.tech/dbname?sslmode=require"
+
+   # Security Token
+   SECRET_KEY="ganti_dengan_kunci_rahasia_anda_yang_panjang_dan_aman"
+
+   # Cloudinary Configuration
+   VITE_CLOUDINARY_CLOUD_NAME="your_cloud_name"
+   VITE_CLOUDINARY_API_KEY="your_api_key"
+   CLOUDINARY_API_SECRET="your_api_secret"
+   ```
+
+4. **Jalankan Database Migrations (Opsional jika DB baru)**
+   *(Pastikan Anda telah mengonfigurasi skema Drizzle di folder `db/`)*
+
+5. **Jalankan Development Server**
+   ```bash
+   # Jalankan Frontend & Backend secara bersamaan
+   npm run dev
+   ```
+
+6. **Akses Aplikasi**
+   - Publik: `http://localhost:5173`
+   - Admin: `http://localhost:5173/admin` (Kredensial bawaan tergantung konfigurasi DB Anda)
 
 ---
 
-## 🤝 White-labeling & Multi-Tenant
+## 📝 License
 
-Untuk menjual ke sekolah lain:
-1. Buat **1 database terpisah** per sekolah.
-2. Buat **1 Vercel project** baru, import repo yang sama, set `DATABASE_URL` berbeda.
-3. Atur domain kustom per sekolah.
-4. Sesuaikan pengaturan via Panel Admin (tidak perlu ubah code).
+Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
-
-## 📄 Lisensi
-
-Hak cipta dilindungi. Hubungi pengembang untuk lisensi komersial.
+<div align="center">
+  Dibuat dengan ❤️ untuk kemajuan pendidikan digital.
+</div>
