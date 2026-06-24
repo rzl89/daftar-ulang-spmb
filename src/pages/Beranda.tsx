@@ -219,7 +219,7 @@ export default function Beranda() {
 
   const renderImage = (block: any) => (
     <section key={block.id} className="py-12 px-6 md:px-8 w-full max-w-7xl mx-auto">
-      <img src={block.content?.imageUrl} alt={block.content?.title || 'Image'} className="w-full h-auto rounded-3xl shadow-lg" />
+      <img src={block.content?.imageUrl} alt={block.content?.title || 'Image'} className="w-full h-auto rounded-3xl shadow-lg" loading="lazy" style={{ aspectRatio: '16/9' }} />
     </section>
   );
 

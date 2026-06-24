@@ -139,7 +139,7 @@ export default function BuktiDaftarUlang() {
                 </span>
               </div>
               <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-sm shrink-0">
-                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${data.registrationId}`} alt="QR Code" className="w-16 h-16" />
+                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${data.registrationId}`} alt="QR Code" className="w-16 h-16" width={64} height={64} loading="lazy" />
               </div>
             </div>
           </CardContent>

@@ -92,7 +92,7 @@ export default function AdminLayout() {
       <div className={`flex items-center justify-between p-4 border-b border-slate-700/50 ${!isSidebarOpen && 'justify-center'}`}>
         <div className="flex items-center gap-3 overflow-hidden">
           {schoolLogo ? (
-            <img src={schoolLogo} alt="Logo" className="w-8 h-8 object-contain shrink-0 drop-shadow-md" />
+            <img src={schoolLogo} alt="Logo" width={32} height={32} className="w-8 h-8 object-contain shrink-0 drop-shadow-md" />
           ) : (
             <div className="p-1.5 bg-accent rounded-lg shrink-0 shadow-lg shadow-accent/20">
               <Shield className="w-6 h-6 text-primary" />
