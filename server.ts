@@ -29,7 +29,7 @@ app.get('/api/settings', async (_req, res) => {
   try {
     const rows = await db.query.settings.findMany();
     const sensitiveKeys = ['admin_password'];
-    const publicSettings = rows.filter(r => !sensitiveKeys.includes(r.key));
+    const publicSettings = rows.filter(r => !sensitiveKeys.includes(r.key as string));
     res.json(publicSettings);
   } catch (e: any) {
     res.status(500).json({ message: 'Server error' });
