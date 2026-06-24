@@ -43,6 +43,7 @@
     "pg": "^8.21.0",
     "react-hook-form": "^7.76.0",
     "react-router-dom": "^7.15.1",
+    "serverless-http": "^4.0.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "xlsx": "^0.18.5",
