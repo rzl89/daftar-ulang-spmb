@@ -124,8 +124,8 @@ export default function DaftarUlang() {
     try {
       // 1. Upload files to Cloudinary
       const dokumen: Record<string, string> = {};
-      const cloudName = 'djdimzxom';
-      const apiKey = '988216935877547';
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '';
+      const apiKey = import.meta.env.VITE_CLOUDINARY_API_KEY || '';
 
       // Get signature from our backend
       const signRes = await fetch('/api/cloudinary/sign');

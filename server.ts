@@ -23,7 +23,7 @@ app.get('/api/cloudinary/sign', (req, res) => {
   try {
     const timestamp = Math.round(new Date().getTime() / 1000);
     // API Secret dari User
-    const apiSecret = 'K0e3RCyeB7OeKQkKZQDbmtKQyDc';
+    const apiSecret = process.env.CLOUDINARY_API_SECRET || '';
     
     // Cloudinary signature = sha1("timestamp=" + timestamp + apiSecret)
     const signature = crypto.createHash('sha1').update(`timestamp=${timestamp}${apiSecret}`).digest('hex');
