@@ -21,6 +21,7 @@ export const REGISTRATION_DEADLINE = getRegistrationDeadline();
 
 export const NAV_LINKS = [
   { label: "Beranda", path: "/" },
+  { label: "Cek Kelulusan", path: "/verifikasi" },
   { label: "Daftar Ulang", path: "/daftar-ulang" },
 ] as const;
 
