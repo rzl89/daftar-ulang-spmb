@@ -26,3 +26,7 @@ dist-ssr
 .vercel
 .env
 src_backup/
+.vercel
+
+# Local Netlify folder
+.netlify
