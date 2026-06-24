@@ -184,18 +184,24 @@ export default function KelolaPertanyaan() {
     const newIdx = filtered.findIndex(q => q.id === over.id);
     const reordered = arrayMove(filtered, oldIdx, newIdx);
 
-    // Rebuild full list with updated sortOrders for the filtered section
-    const updated = questions.map(q => {
-      const idx = reordered.findIndex(r => r.id === q.id);
-      return idx !== -1 ? { ...q, sortOrder: idx } : q;
+    // Rebuild full list to maintain global sortOrder integrity
+    let reorderIndex = 0;
+    const newQuestions = questions.map(q => {
+      // If question was in the filtered list, replace it with the reordered sequence
+      if (filtered.some(f => f.id === q.id)) {
+        return reordered[reorderIndex++];
+      }
+      return q;
     });
+
+    const updated = newQuestions.map((q, i) => ({ ...q, sortOrder: i }));
     setQuestions(updated);
 
     try {
       await fetch('/api/admin/form-questions/reorder', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: reordered.map((q, i) => ({ id: q.id, sortOrder: i })) }),
+        body: JSON.stringify({ items: updated.map((q) => ({ id: q.id, sortOrder: q.sortOrder })) }),
       });
       toast.success('Urutan berhasil disimpan');
     } catch {
