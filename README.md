@@ -26,12 +26,7 @@ Mengucapkan selamat tinggal pada formulir kertas dan proses manual yang memakan 
 
 ## ✨ Features Showcase
 
-### 1. 🏠 Dynamic Landing Page
-Halaman depan yang sepenuhnya dapat dikustomisasi langsung dari panel admin. Tanpa perlu *coding* untuk mengubah teks, gambar, atau struktur informasi sekolah.
-<p align="center">
-  <img src="docs/screenshots/01-landing-page.png" alt="Landing Page Preview" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
-  <br><i>*(Screenshot: Halaman utama publik dengan desain modern dan responsif)*</i>
-</p>
+
 
 ### 2. 🔍 Real-time Verification & Status Check
 Siswa dapat mengecek status kelulusan mereka secara instan menggunakan Nomor Peserta atau NISN. Sistem akan memberikan informasi *real-time* mengenai hasil seleksi.

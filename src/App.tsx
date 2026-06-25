@@ -19,13 +19,10 @@ const Dashboard = React.lazy(() => import("@/pages/admin/Dashboard"));
 const DataPeserta = React.lazy(() => import("@/pages/admin/DataPeserta"));
 const DataKelulusan = React.lazy(() => import("@/pages/admin/DataKelulusan"));
 const VerifikasiBerkas = React.lazy(() => import("@/pages/admin/VerifikasiBerkas"));
-const Pengumuman = React.lazy(() => import("@/pages/admin/Pengumuman"));
 const Laporan = React.lazy(() => import("@/pages/admin/Laporan"));
 const LogAktivitas = React.lazy(() => import("@/pages/admin/LogAktivitas"));
 const Pengaturan = React.lazy(() => import("@/pages/admin/Pengaturan"));
 const KelolaJurusan = React.lazy(() => import("@/pages/admin/KelolaJurusan"));
-const KelolaLandingPage = React.lazy(() => import("@/pages/admin/KelolaLandingPage"));
-const KelolaKonten = React.lazy(() => import("@/pages/admin/KelolaKonten"));
 const KelolaPertanyaan = React.lazy(() => import("@/pages/admin/KelolaPertanyaan"));
 
 const PageLoader = () => (
@@ -91,10 +88,7 @@ function AppLayout() {
               <Route path="peserta" element={<DataPeserta />} />
               <Route path="kelulusan" element={<DataKelulusan />} />
               <Route path="verifikasi" element={<VerifikasiBerkas />} />
-              <Route path="pengumuman" element={<Pengumuman />} />
               <Route path="jurusan" element={<KelolaJurusan />} />
-              <Route path="landing-page" element={<KelolaLandingPage />} />
-              <Route path="konten" element={<KelolaKonten />} />
               <Route path="pertanyaan" element={<KelolaPertanyaan />} />
               <Route path="laporan" element={<Laporan />} />
               <Route path="pengaturan" element={<Pengaturan />} />

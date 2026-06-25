@@ -5,7 +5,7 @@ Berikut adalah rangkuman lengkap mengenai proyek **Web Daftar Ulang SPMB (Sistem
 ## 1. Spesifikasi & Tujuan Proyek
 Proyek ini adalah website Daftar Ulang SPMB yang dirancang secara spesifik agar terlihat profesional, rapi, dapat dipercaya, dan mudah digunakan (baik untuk admin sekolah maupun siswa/orang tua). 
 - **Fokus Utama:** Alur registrasi yang jelas, antarmuka *mobile-first*, pengelolaan data kelulusan, dan administrasi sekolah.
-- **Fitur Utama:** Pendaftaran ulang, pengecekan kelulusan/status (dengan verifikasi NISN & Tanggal Lahir), panel admin untuk mengelola jurusan, pendaftar, pengumuman, dan data kelulusan.
+- **Fitur Utama:** Pendaftaran ulang, pengecekan kelulusan/status (dengan verifikasi NISN & Tanggal Lahir), panel admin untuk mengelola jurusan, pendaftar, dan data kelulusan.
 
 ## 2. Tech Stack (Teknologi yang Digunakan)
 - **Frontend:**
@@ -60,7 +60,7 @@ API dibangun dalam file `server.ts`. Berikut adalah rincian API-nya:
 ### B. Admin (Khusus Pengelolaan Data)
 - `POST /api/admin/login` — Login admin.
 - `GET /api/admin/stats` — Data statistik *dashboard* (total pendaftar, diterima, ditolak, dll).
-- `POST /api/admin/seed` — *Endpoint* untuk mengisi data awal (jurusan, pengaturan awal sekolah, dan *announcements*).
+- `POST /api/admin/seed` — *Endpoint* untuk mengisi data awal (jurusan dan pengaturan awal sekolah).
 - **Pengaturan (Settings):**
   - `GET /api/admin/settings` & `PUT /api/admin/settings/:key`
 - **Jurusan:**
@@ -76,8 +76,7 @@ API dibangun dalam file `server.ts`. Berikut adalah rincian API-nya:
   - `GET /api/admin/passed-students`
   - `POST /api/admin/passed-students/bulk` (Upload data kelulusan massal/CSV-Excel)
   - `DELETE /api/admin/passed-students` (Hapus/Reset semua data kelulusan)
-- **Pengumuman (Announcements):**
-  - `GET`, `POST`, `PUT`, `DELETE` untuk jalur `/api/admin/announcements/:id`
+
 - **Log Aktivitas:**
   - `GET /api/admin/logs` & `POST /api/admin/logs`
 
@@ -86,7 +85,7 @@ Sistem memiliki 6 tabel utama di database PostgreSQL:
 1. **`registrations`**: Menyimpan data pendaftaran siswa (NISN, Data Pribadi, Data Orang Tua, Pilihan Jurusan, URL Dokumen, dan Status Verifikasi).
 2. **`jurusan`**: Menyimpan data master jurusan sekolah (Kode, Nama, Kuota, Status Aktif).
 3. **`settings`**: Menyimpan konfigurasi dinamis aplikasi dengan format *key-value* (Nama Sekolah, Kontak, Durasi Pendaftaran, Password Admin, dll).
-4. **`announcements`**: Menyimpan pengumuman dari admin untuk ditampilkan di beranda publik.
+4. **(Dihapus)**: Tabel announcements sebelumnya.
 5. **`passed_students`**: Menyimpan data peserta yang dinyatakan lulus (digunakan pada fitur verifikasi kelulusan).
 6. **`activity_logs`**: Menyimpan log aktivitas admin (Audit Trail) seperti siapa yang melakukan apa.
 
@@ -94,7 +93,7 @@ Sistem memiliki 6 tabel utama di database PostgreSQL:
 Aplikasi ini di-routing menggunakan `react-router-dom` dengan pembagian halaman sebagai berikut:
 
 ### Halaman Publik
-- `/` — Beranda (Informasi, Countdown, Pengumuman)
+- `/` — Beranda (Informasi, Countdown)
 - `/verifikasi` — Pengecekan kelulusan (input NISN & Tanggal Lahir)
 - `/daftar-ulang` — Form pengisian data diri dan upload berkas daftar ulang
 - `/bukti-daftar-ulang` — Menampilkan ringkasan/cetak bukti pendaftaran
@@ -105,7 +104,7 @@ Aplikasi ini di-routing menggunakan `react-router-dom` dengan pembagian halaman 
 - `/admin/peserta` — Pengelolaan data peserta daftar ulang
 - `/admin/kelulusan` — Pengelolaan data kelulusan (Upload massal & reset)
 - `/admin/verifikasi` — Proses verifikasi berkas pendaftar
-- `/admin/pengumuman` — Mengelola artikel pengumuman informasi
+
 - `/admin/jurusan` — Mengelola master data jurusan
 - `/admin/laporan` — Cetak laporan (eksport ke PDF/Excel)
 - `/admin/pengaturan` — Mengelola *Settings* aplikasi (termasuk ganti password admin)

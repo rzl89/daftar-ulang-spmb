@@ -13,11 +13,8 @@ import {
 } from "lucide-react";
 import { Button, Card, CardContent, FlipClock } from "@/components/ui";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { useLandingBlocks } from "@/hooks";
-
 
 export default function Beranda() {
-  const { blocks, loading } = useLandingBlocks();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const getSetting = useSettingsStore(s => s.getSetting);
   const schoolName = getSetting('school_name');
@@ -208,50 +205,11 @@ export default function Beranda() {
     </section>
   );
 
-  const renderCustomText = (block: any) => (
-    <section key={block.id} className="py-16 px-6 md:px-8 w-full">
-      <div
-        className="max-w-4xl mx-auto prose prose-slate md:prose-lg text-slate-700"
-        dangerouslySetInnerHTML={{ __html: block.content?.html || '' }}
-      />
-    </section>
-  );
-
-  const renderImage = (block: any) => (
-    <section key={block.id} className="py-12 px-6 md:px-8 w-full max-w-7xl mx-auto">
-      <img src={block.content?.imageUrl} alt={block.content?.title || 'Image'} className="w-full h-auto rounded-3xl shadow-lg" loading="lazy" style={{ aspectRatio: '16/9' }} />
-    </section>
-  );
-
-  const renderBlocks = () => {
-    if (loading) return null;
-    
-    // If no blocks are defined yet, show default blocks
-    if (blocks.length === 0) {
-      return (
-        <>
-          {renderHero()}
-          {renderSteps()}
-          {renderMap()}
-        </>
-      );
-    }
-
-    return blocks.map(block => {
-      switch (block.type) {
-        case 'HERO': return renderHero();
-        case 'STEPS': return renderSteps();
-        case 'MAP': return renderMap();
-        case 'TEXT': return renderCustomText(block);
-        case 'IMAGE': return renderImage(block);
-        default: return null;
-      }
-    });
-  };
-
   return (
     <div className="w-full flex flex-col pb-20">
-      {renderBlocks()}
+      {renderHero()}
+      {renderSteps()}
+      {renderMap()}
     </div>
   );
 }
