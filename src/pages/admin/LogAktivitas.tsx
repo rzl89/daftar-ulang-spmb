@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { motion } from '@/utils/motion-lite';
 import { History, Activity } from 'lucide-react';
 
@@ -17,15 +18,7 @@ export default function LogAktivitas() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const res = await (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/logs');
+        const res = await apiFetch('/api/admin/logs');
         if (res.ok) {
           setLogs(await res.json());
         }

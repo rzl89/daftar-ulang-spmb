@@ -4,6 +4,7 @@ import { motion } from '@/utils/motion-lite';
 import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { setStoredToken } from '@/utils/api';
 
 export default function LoginAdmin() {
   const [password, setPassword] = useState('');
@@ -33,7 +34,7 @@ export default function LoginAdmin() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        sessionStorage.setItem('admin_token', data.token);
+        setStoredToken(data.token);
         toast.success('Login berhasil');
         navigate('/admin/dashboard');
       } else {
@@ -122,8 +123,8 @@ export default function LoginAdmin() {
             </form>
 
             <div className="mt-8 text-center pt-6 border-t border-white/10">
-              <p className="text-xs text-white/50">
-                Default password untuk demo: <span className="text-accent font-mono bg-white/5 px-2 py-1 rounded">admin2025</span>
+              <p className="text-xs text-white/40">
+                Panel administrasi SPMB — akses terbatas hanya untuk petugas yang berwenang.
               </p>
             </div>
           </div>

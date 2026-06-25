@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { motion } from '@/utils/motion-lite';
 import { BarChart3, Download, Printer, TrendingUp, Users, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -26,24 +27,8 @@ export default function Laporan() {
     const fetchData = async () => {
       try {
         const [statsRes, regRes] = await Promise.all([
-          (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/stats'),
-          (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/registrations')
+          apiFetch('/api/admin/stats'),
+          apiFetch('/api/admin/registrations')
         ]);
         
         if (statsRes.ok) setStats(await statsRes.json());

@@ -8,31 +8,96 @@ import dotenv from 'dotenv';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import { z } from 'zod';
 
 dotenv.config();
 
+// --- Startup validation ---
+if (!process.env.SECRET_KEY) {
+  console.error('❌ FATAL: SECRET_KEY environment variable is not set.');
+  console.error('   Generate one with: openssl rand -hex 64');
+  console.error('   Add it to your .env file as SECRET_KEY=<generated-value>');
+  process.exit(1);
+}
+
 const app = express();
-app.use(cors());
-app.use(express.json());
+
+// Security headers (CSP, X-Frame-Options, HSTS, etc.)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
+      fontSrc: ["'self'"],
+      connectSrc: ["'self'"],
+      frameAncestors: ["'none'"],
+      formAction: ["'self'"],
+    },
+  },
+}));
+
+// CORS — restrict to allowed origins
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || ['http://localhost:5173'];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
+}));
+app.use(express.json({ limit: '5mb' }));
+app.use(cookieParser());
+
+// Rate limiting
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  message: { message: 'Terlalu banyak percobaan login. Coba lagi nanti.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100,
+  message: { message: 'Terlalu banyak permintaan. Coba lagi nanti.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // ================================================================
 //  AUTH MIDDLEWARE
 // ================================================================
 const authMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // Bypassed paths for login and seed
-  if (req.path === '/api/admin/login' || req.path === '/api/admin/seed') {
+  // Only the login endpoint is public
+  if (req.path === '/api/admin/login') {
     return next();
   }
 
   if (req.path.startsWith('/api/admin')) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Check httpOnly cookie first, then fall back to Authorization header
+    let token = req.cookies?.admin_token;
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+      }
+    }
+
+    if (!token) {
       return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
 
-    const token = authHeader.split(' ')[1];
     try {
-      const decoded = jwt.verify(token, process.env.SECRET_KEY || 'default_secret_key');
+      const decoded = jwt.verify(token, process.env.SECRET_KEY!);
       (req as any).admin = decoded;
       next();
     } catch (err) {
@@ -44,6 +109,7 @@ const authMiddleware = (req: express.Request, res: express.Response, next: expre
 };
 
 app.use(authMiddleware);
+app.use('/api/', apiLimiter);
 
 const sql_client = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql_client, { schema });
@@ -51,19 +117,31 @@ const db = drizzle(sql_client, { schema });
 // ================================================================
 //  CLOUDINARY UPLOAD SIGNATURE
 // ================================================================
-app.get('/api/cloudinary/sign', (req, res) => {
+// Rate limiter khusus upload signature — lebih ketat
+const uploadSignLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10,
+  message: { message: 'Terlalu banyak permintaan signature. Coba lagi nanti.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.get('/api/cloudinary/sign', uploadSignLimiter, (req, res) => {
   try {
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    if (!apiSecret) {
+      console.error('CLOUDINARY_API_SECRET is not configured');
+      return res.status(500).json({ message: 'Upload service is not configured' });
+    }
+
     const timestamp = Math.round(new Date().getTime() / 1000);
-    // API Secret dari User
-    const apiSecret = process.env.CLOUDINARY_API_SECRET || '';
-    
     // Cloudinary signature = sha1("timestamp=" + timestamp + apiSecret)
     const signature = crypto.createHash('sha1').update(`timestamp=${timestamp}${apiSecret}`).digest('hex');
-    
+
     res.json({ timestamp, signature });
   } catch (error) {
     console.error('Error generating signature', error);
-    res.status(500).json({ message: 'Error generating signature' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -84,7 +162,7 @@ app.get('/api/settings', async (_req, res) => {
     const publicSettings = rows.filter(r => !sensitiveKeys.includes(r.key as string));
     res.json(publicSettings);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -102,31 +180,68 @@ app.get('/api/registrations/:nisn', async (req, res) => {
     res.json(result);
   } catch (e: any) {
     console.error('GET /api/registrations/:nisn', e.message);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
-// POST — Submit new registration
+// Zod schema for server-side registration validation
+const RegistrationSchema = z.object({
+  dataPribadi: z.object({
+    nisn: z.string().length(10, 'NISN harus 10 digit').regex(/^\d+$/, 'NISN harus berupa angka'),
+    namaLengkap: z.string().min(3, 'Nama minimal 3 karakter').max(150),
+    tempatLahir: z.string().min(1).max(100),
+    tanggalLahir: z.string().min(1, 'Tanggal lahir wajib diisi'),
+    jenisKelamin: z.enum(['L', 'P']),
+    agama: z.string().min(1).max(50),
+    alamat: z.string().min(10).max(500),
+  }),
+  dataOrtu: z.object({
+    namaAyah: z.string().min(1).max(150),
+    pekerjaanAyah: z.string().min(1).max(100),
+    namaIbu: z.string().min(1).max(150),
+    pekerjaanIbu: z.string().min(1).max(100),
+    noTelpOrtu: z.string().min(10).max(20).regex(/^\d+$/, 'Nomor telepon harus berupa angka'),
+  }),
+  dataAkademik: z.object({
+    asalSekolah: z.string().min(1).max(150),
+    jurusanPilihan1: z.string().min(1),
+    jurusanPilihan2: z.string().min(1),
+  }),
+  dokumen: z.object({
+    ijazahUrl: z.string().url().optional(),
+    kartuKeluargaUrl: z.string().url().optional(),
+    aktaKelahiranUrl: z.string().url().optional(),
+    pasFotoUrl: z.string().url().optional(),
+  }).optional(),
+});
+
+// POST — Submit new registration (with server-side validation)
 app.post('/api/registrations', async (req, res) => {
   try {
-    const data = req.body;
-    if (!data.dataPribadi?.nisn || !data.dataPribadi?.namaLengkap) {
-      return res.status(400).json({ message: 'NISN dan Nama Lengkap wajib diisi' });
+    // Server-side validation
+    const parsed = RegistrationSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: 'Data tidak valid',
+        errors: parsed.error.flatten().fieldErrors,
+      });
     }
+
+    const data = parsed.data;
 
     const existing = await db.query.registrations.findFirst({
       where: eq(schema.registrations.nisn, data.dataPribadi.nisn),
     });
     if (existing) return res.status(400).json({ message: 'NISN sudah terdaftar sebelumnya' });
 
-    const suffix = crypto.randomBytes(3).toString('hex').toUpperCase();
+    const suffix = crypto.randomBytes(6).toString('hex').toUpperCase();
     const registrationId = `SPMB-${new Date().getFullYear()}-${suffix}`;
 
     const [row] = await db.insert(schema.registrations).values({
       registrationId,
       nisn: data.dataPribadi.nisn,
       namaLengkap: data.dataPribadi.namaLengkap,
-      tempatLahir: data.dataPribadi.tempatLahir || '',
+      tempatLahir: data.dataPribadi.tempatLahir,
       tanggalLahir: data.dataPribadi.tanggalLahir || '2009-01-01',
       jenisKelamin: data.dataPribadi.jenisKelamin || 'L',
       agama: data.dataPribadi.agama || 'Islam',
@@ -144,8 +259,8 @@ app.post('/api/registrations', async (req, res) => {
     console.log(`✅ Pendaftaran: ${registrationId} — ${data.dataPribadi.namaLengkap}`);
     res.status(201).json(row);
   } catch (e: any) {
-    console.error('POST /api/registrations', e.message);
-    res.status(500).json({ message: 'Server error: ' + e.message });
+    console.error('POST /api/registrations', e);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -163,7 +278,7 @@ app.get('/api/jurusan', async (_req, res) => {
     res.json(rows);
   } catch (e: any) {
     console.error('GET /api/jurusan', e.message);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -175,7 +290,7 @@ app.get('/api/admin/jurusan', async (_req, res) => {
     });
     res.json(rows);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -194,7 +309,7 @@ app.post('/api/admin/jurusan', async (req, res) => {
     res.status(201).json(row);
   } catch (e: any) {
     console.error('POST /api/admin/jurusan', e.message);
-    res.status(500).json({ message: 'Server error: ' + e.message });
+    console.error(e); res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -218,7 +333,7 @@ app.put('/api/admin/jurusan/:id', async (req, res) => {
     res.json(row);
   } catch (e: any) {
     console.error('PUT /api/admin/jurusan/:id', e.message);
-    res.status(500).json({ message: 'Server error: ' + e.message });
+    console.error(e); res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -231,7 +346,7 @@ app.delete('/api/admin/jurusan/:id', async (req, res) => {
     if (!row) return res.status(404).json({ message: 'Jurusan tidak ditemukan' });
     res.json({ message: 'Jurusan berhasil dihapus' });
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -247,7 +362,7 @@ app.get('/api/admin/registrations', async (_req, res) => {
     });
     res.json(rows);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -266,7 +381,7 @@ app.put('/api/admin/registrations/:id', async (req, res) => {
     console.log(`📋 Status updated: ${row.registrationId} → ${status}`);
     res.json(row);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -280,7 +395,7 @@ app.delete('/api/admin/registrations/:id', async (req, res) => {
     console.log(`🗑️ Deleted: ${row.registrationId}`);
     res.json({ message: 'Data berhasil dihapus' });
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -288,13 +403,16 @@ app.delete('/api/admin/registrations/:id', async (req, res) => {
 //  SETTINGS — ADMIN
 // ================================================================
 
-// GET — All settings
+// GET — All settings (password hash is filtered out)
 app.get('/api/admin/settings', async (_req, res) => {
   try {
     const rows = await db.query.settings.findMany();
-    res.json(rows);
+    const sensitiveKeys = ['admin_password'];
+    const safeSettings = rows.filter(r => !sensitiveKeys.includes(r.key as string));
+    res.json(safeSettings);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('GET /api/admin/settings', e);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -328,7 +446,7 @@ app.put('/api/admin/settings/:key', async (req, res) => {
       res.status(201).json(row);
     }
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error: ' + e.message });
+    console.error(e); res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -385,39 +503,50 @@ app.post('/api/admin/seed', async (_req, res) => {
     console.log('🌱 Seed completed');
     res.json({ message: 'Seed berhasil' });
   } catch (e: any) {
-    console.error('Seed error:', e.message);
-    res.status(500).json({ message: 'Seed error: ' + e.message });
+    console.error('Seed error:', e);
+    res.status(500).json({ message: 'Terjadi kesalahan server saat seeding' });
   }
 });
 
 // ================================================================
 //  AUTH — Simple admin login
 // ================================================================
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login', loginLimiter, async (req, res) => {
   try {
     const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ message: 'Password wajib diisi' });
+    }
+
     const setting = await db.query.settings.findFirst({
       where: eq(schema.settings.key, 'admin_password'),
     });
     const adminPwHash = setting?.value || '';
 
-    // Handle plaintext fallback if migrating, otherwise bcrypt compare
-    let isMatch = false;
-    if (adminPwHash === 'admin2025') {
-      // Legacy plaintext
-      isMatch = (password === 'admin2025');
-    } else {
-      isMatch = await bcrypt.compare(password, adminPwHash);
+    if (!adminPwHash) {
+      return res.status(500).json({ message: 'Server belum dikonfigurasi. Jalankan seed terlebih dahulu.' });
     }
 
+    const isMatch = await bcrypt.compare(password, adminPwHash);
+
     if (isMatch) {
-      const token = jwt.sign({ role: 'admin' }, process.env.SECRET_KEY || 'default_secret_key', { expiresIn: '1d' });
+      const token = jwt.sign({ role: 'admin' }, process.env.SECRET_KEY!, { expiresIn: '4h' });
+      // Set httpOnly cookie as primary auth mechanism
+      res.cookie('admin_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 4 * 60 * 60 * 1000, // 4 hours
+        path: '/',
+      });
+      // Also return token in response for fallback (sessionStorage in SPAs)
       res.json({ success: true, token });
     } else {
       res.status(401).json({ message: 'Password salah' });
     }
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Login error:', e);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -432,7 +561,7 @@ app.get('/api/admin/stats', async (_req, res) => {
     const [{ count: ditolak }] = await db.select({ count: count() }).from(schema.registrations).where(eq(schema.registrations.status, 'DITOLAK'));
     res.json({ totalPendaftar, sudahDaftarUlang, belumDaftarUlang, ditolak });
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -449,7 +578,7 @@ app.get('/api/admin/passed-students', async (_req, res) => {
     });
     res.json(rows);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -471,7 +600,7 @@ app.post('/api/admin/passed-students/bulk', async (req, res) => {
     res.status(201).json({ message: `${students.length} data kelulusan berhasil diunggah` });
   } catch (e: any) {
     console.error('Bulk Insert Error:', e.message);
-    res.status(500).json({ message: 'Server error: ' + e.message });
+    console.error(e); res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -481,7 +610,7 @@ app.delete('/api/admin/passed-students', async (_req, res) => {
     await db.delete(schema.passedStudents);
     res.json({ message: 'Data kelulusan berhasil di-reset' });
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -526,7 +655,7 @@ app.post('/api/verifikasi', async (req, res) => {
     res.json({ success: true, data: student });
   } catch (e: any) {
     console.error('Verifikasi Error:', e.message);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -541,7 +670,7 @@ app.get('/api/admin/logs', async (_req, res) => {
     });
     res.json(rows);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -553,7 +682,7 @@ app.post('/api/admin/logs', async (req, res) => {
     }).returning();
     res.status(201).json(row);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -571,7 +700,7 @@ app.get('/api/form-questions', async (_req, res) => {
     });
     res.json(rows);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -583,7 +712,7 @@ app.get('/api/admin/form-questions', async (_req, res) => {
     });
     res.json(rows);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -607,7 +736,7 @@ app.post('/api/admin/form-questions', async (req, res) => {
     if (e.message?.includes('unique')) {
       return res.status(400).json({ message: 'Field name sudah digunakan' });
     }
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -629,7 +758,7 @@ app.put('/api/admin/form-questions/:id', async (req, res) => {
     if (!row) return res.status(404).json({ message: 'Pertanyaan tidak ditemukan' });
     res.json(row);
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -643,7 +772,7 @@ app.delete('/api/admin/form-questions/:id', async (req, res) => {
     if (!row) return res.status(404).json({ message: 'Pertanyaan tidak ditemukan' });
     res.json({ success: true });
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -659,7 +788,7 @@ app.put('/api/admin/form-questions/reorder', async (req, res) => {
     }
     res.json({ success: true });
   } catch (e: any) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
@@ -701,8 +830,8 @@ app.post('/api/admin/form-questions/seed', async (_req, res) => {
     }
     res.json({ message: 'Seed pertanyaan berhasil', seeded });
   } catch (e: any) {
-    console.error('Seed form-questions error:', e.message);
-    res.status(500).json({ message: 'Server error', detail: e.message });
+    console.error('Seed form-questions error:', e);
+    res.status(500).json({ message: 'Terjadi kesalahan server saat seeding pertanyaan' });
   }
 });
 

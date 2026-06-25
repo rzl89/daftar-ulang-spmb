@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from '@/utils/motion-lite';
 import { Users, UserCheck, Clock, UserX, Activity } from 'lucide-react';
+import { apiFetch } from '@/utils/api';
 
 interface Stats {
   totalPendaftar: number;
@@ -36,33 +37,9 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         const [statsRes, logsRes, regRes] = await Promise.all([
-          (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/stats'),
-          (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/logs'),
-          (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/registrations')
+          apiFetch('/api/admin/stats'),
+          apiFetch('/api/admin/logs'),
+          apiFetch('/api/admin/registrations'),
         ]);
         
         if (statsRes.ok) setStats(await statsRes.json());

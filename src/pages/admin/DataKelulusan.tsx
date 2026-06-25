@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { apiFetch } from '@/utils/api';
 import { motion, AnimatePresence } from '@/utils/motion-lite';
 import { 
   Upload, Download, Trash2, FileSpreadsheet, CheckCircle2, AlertCircle, 
@@ -49,15 +50,7 @@ export default function DataKelulusan() {
   const fetchSavedData = async () => {
     setIsLoading(true);
     try {
-      const res = await (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/passed-students');
+      const res = await apiFetch('/api/admin/passed-students');
       if (res.ok) {
         const data = await res.json();
         setSavedData(data);
@@ -151,15 +144,7 @@ export default function DataKelulusan() {
     if (previewData.length === 0) return;
     setIsSaving(true);
     try {
-      const res = await (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/passed-students/bulk', {
+      const res = await apiFetch('/api/admin/passed-students/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ students: previewData }),
@@ -183,15 +168,7 @@ export default function DataKelulusan() {
   // Reset all data
   const handleResetData = async () => {
     try {
-      const res = await (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/passed-students', { method: 'DELETE' });
+      const res = await apiFetch('/api/admin/passed-students', { method: 'DELETE' });
       if (res.ok) {
         toast.success('Seluruh data kelulusan berhasil di-reset');
         setSavedData([]);

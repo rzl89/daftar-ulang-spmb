@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { motion } from '@/utils/motion-lite';
 import { Settings, Save, LayoutTemplate } from 'lucide-react';
 import { toast } from 'sonner';
@@ -30,15 +31,7 @@ export default function Pengaturan() {
 
   const fetchSettings = async () => {
     try {
-      const res = await (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/settings');
+      const res = await apiFetch('/api/admin/settings');
       const data = await res.json();
       if (res.ok && Array.isArray(data)) {
         const newSettings = { ...settings };
@@ -62,15 +55,7 @@ export default function Pengaturan() {
     try {
       // Save each setting sequentially
       for (const [key, value] of Object.entries(settings)) {
-        await (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})(`/api/admin/settings/${key}`, {
+        await apiFetch(`/api/admin/settings/${key}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ value })
@@ -78,15 +63,7 @@ export default function Pengaturan() {
       }
       
       // Log activity
-      await (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/logs', {
+      await apiFetch('/api/admin/logs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

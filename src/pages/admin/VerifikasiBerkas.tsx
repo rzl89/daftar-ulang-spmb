@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { motion } from '@/utils/motion-lite';
 import { FileCheck, CheckCircle2, XCircle, AlertTriangle, User, FileText } from 'lucide-react';
 import { toast } from 'sonner';
@@ -26,15 +27,7 @@ export default function VerifikasiBerkas() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const res = await (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})('/api/admin/registrations');
+      const res = await apiFetch('/api/admin/registrations');
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -60,15 +53,7 @@ export default function VerifikasiBerkas() {
 
   const handleVerifikasi = async (id: number, status: string, message: string) => {
     try {
-      const res = await (function(url, opts) {
-  const token = sessionStorage.getItem('admin_token');
-  opts = opts || {};
-  opts.headers = {
-    ...opts.headers,
-    Authorization: 'Bearer ' + token
-  };
-  return fetch(url, opts);
-})(`/api/admin/registrations/${id}`, {
+      const res = await apiFetch(`/api/admin/registrations/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
