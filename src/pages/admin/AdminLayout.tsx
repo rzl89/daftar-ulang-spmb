@@ -47,7 +47,7 @@ export default function AdminLayout() {
 
   // Initialize auth check and dark mode
   useEffect(() => {
-    const isAuth = sessionStorage.getItem('admin_auth');
+    const isAuth = sessionStorage.getItem('admin_token');
     if (!isAuth && location.pathname !== '/admin/login') {
       navigate('/admin/login');
     }
@@ -71,7 +71,7 @@ export default function AdminLayout() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem('admin_auth');
+    sessionStorage.removeItem('admin_token');
     toast.success('Berhasil logout');
     navigate('/admin/login');
   };

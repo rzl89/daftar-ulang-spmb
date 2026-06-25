@@ -17,7 +17,15 @@ export default function LogAktivitas() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const res = await fetch('/api/admin/logs');
+        const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/logs');
         if (res.ok) {
           setLogs(await res.json());
         }

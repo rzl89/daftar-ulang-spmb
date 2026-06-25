@@ -23,7 +23,15 @@ export default function KelolaJurusan() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/admin/jurusan');
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/jurusan');
       if (res.ok) setData(await res.json());
     } catch {
       toast.error('Gagal memuat data jurusan');
@@ -80,7 +88,15 @@ export default function KelolaJurusan() {
   const handleDelete = async () => {
     if (!selected) return;
     try {
-      const res = await fetch(`/api/admin/jurusan/${selected.id}`, { method: 'DELETE' });
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})(`/api/admin/jurusan/${selected.id}`, { method: 'DELETE' });
       if (res.ok) {
         toast.success('Jurusan berhasil dihapus');
         setIsDeleteOpen(false);
@@ -95,7 +111,15 @@ export default function KelolaJurusan() {
 
   const toggleActive = async (j: Jurusan) => {
     try {
-      const res = await fetch(`/api/admin/jurusan/${j.id}`, {
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})(`/api/admin/jurusan/${j.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !j.isActive }),

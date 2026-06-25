@@ -26,8 +26,24 @@ export default function Laporan() {
     const fetchData = async () => {
       try {
         const [statsRes, regRes] = await Promise.all([
-          fetch('/api/admin/stats'),
-          fetch('/api/admin/registrations')
+          (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/stats'),
+          (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/registrations')
         ]);
         
         if (statsRes.ok) setStats(await statsRes.json());

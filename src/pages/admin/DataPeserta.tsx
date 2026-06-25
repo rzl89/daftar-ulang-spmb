@@ -44,7 +44,15 @@ export default function DataPeserta() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/admin/registrations');
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/registrations');
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -105,7 +113,15 @@ export default function DataPeserta() {
     try {
       const form = e.target as HTMLFormElement;
       const formData = new FormData(form);
-      const res = await fetch(`/api/admin/registrations/${selectedStudent.id}`, {
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})(`/api/admin/registrations/${selectedStudent.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -127,7 +143,15 @@ export default function DataPeserta() {
   const handleDelete = async () => {
     if (!selectedStudent) return;
     try {
-      const res = await fetch(`/api/admin/registrations/${selectedStudent.id}`, {
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})(`/api/admin/registrations/${selectedStudent.id}`, {
         method: 'DELETE'
       });
       if (res.ok) {

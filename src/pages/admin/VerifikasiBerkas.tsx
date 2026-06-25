@@ -26,7 +26,15 @@ export default function VerifikasiBerkas() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/admin/registrations');
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/registrations');
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -52,7 +60,15 @@ export default function VerifikasiBerkas() {
 
   const handleVerifikasi = async (id: number, status: string, message: string) => {
     try {
-      const res = await fetch(`/api/admin/registrations/${id}`, {
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})(`/api/admin/registrations/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })

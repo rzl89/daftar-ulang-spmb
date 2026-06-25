@@ -165,7 +165,15 @@ export default function KelolaPertanyaan() {
   const fetchQuestions = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/admin/form-questions');
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/form-questions');
       if (!res.ok) throw new Error();
       setQuestions(await res.json());
     } catch {
@@ -200,7 +208,15 @@ export default function KelolaPertanyaan() {
     setQuestions(updated);
 
     try {
-      await fetch('/api/admin/form-questions/reorder', {
+      await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/form-questions/reorder', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: updated.map((q) => ({ id: q.id, sortOrder: q.sortOrder })) }),
@@ -249,7 +265,15 @@ export default function KelolaPertanyaan() {
   const handleDelete = async (id: number) => {
     if (!confirm('Hapus pertanyaan ini? Tindakan ini tidak bisa dibatalkan.')) return;
     try {
-      const res = await fetch(`/api/admin/form-questions/${id}`, { method: 'DELETE' });
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})(`/api/admin/form-questions/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setQuestions(prev => prev.filter(q => q.id !== id));
         toast.success('Pertanyaan dihapus');
@@ -261,7 +285,15 @@ export default function KelolaPertanyaan() {
 
   const handleToggleActive = async (item: FormQuestion) => {
     try {
-      const res = await fetch(`/api/admin/form-questions/${item.id}`, {
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})(`/api/admin/form-questions/${item.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...item, isActive: !item.isActive }),
@@ -279,7 +311,15 @@ export default function KelolaPertanyaan() {
     if (!confirm('Tambahkan pertanyaan default? Field yang sudah ada tidak akan ditimpa.')) return;
     setIsSeeding(true);
     try {
-      const res = await fetch('/api/admin/form-questions/seed', { method: 'POST' });
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/form-questions/seed', { method: 'POST' });
       const data = await res.json();
       toast.success(`${data.seeded} pertanyaan baru ditambahkan`);
       fetchQuestions();

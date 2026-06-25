@@ -30,7 +30,15 @@ export default function Pengaturan() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/admin/settings');
+      const res = await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/settings');
       const data = await res.json();
       if (res.ok && Array.isArray(data)) {
         const newSettings = { ...settings };
@@ -54,7 +62,15 @@ export default function Pengaturan() {
     try {
       // Save each setting sequentially
       for (const [key, value] of Object.entries(settings)) {
-        await fetch(`/api/admin/settings/${key}`, {
+        await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})(`/api/admin/settings/${key}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ value })
@@ -62,7 +78,15 @@ export default function Pengaturan() {
       }
       
       // Log activity
-      await fetch('/api/admin/logs', {
+      await (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/logs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

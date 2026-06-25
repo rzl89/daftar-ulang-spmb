@@ -36,9 +36,33 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         const [statsRes, logsRes, regRes] = await Promise.all([
-          fetch('/api/admin/stats'),
-          fetch('/api/admin/logs'),
-          fetch('/api/admin/registrations')
+          (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/stats'),
+          (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/logs'),
+          (function(url, opts) {
+  const token = sessionStorage.getItem('admin_token');
+  opts = opts || {};
+  opts.headers = {
+    ...opts.headers,
+    Authorization: 'Bearer ' + token
+  };
+  return fetch(url, opts);
+})('/api/admin/registrations')
         ]);
         
         if (statsRes.ok) setStats(await statsRes.json());

@@ -33,7 +33,7 @@ export default function LoginAdmin() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        sessionStorage.setItem('admin_auth', '1');
+        sessionStorage.setItem('admin_token', data.token);
         toast.success('Login berhasil');
         navigate('/admin/dashboard');
       } else {

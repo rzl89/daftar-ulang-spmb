@@ -6,12 +6,44 @@ import * as schema from './db/schema.js';
 import { eq, desc, asc, count, sql, like } from 'drizzle-orm';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// ================================================================
+//  AUTH MIDDLEWARE
+// ================================================================
+const authMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Bypassed paths for login and seed
+  if (req.path === '/api/admin/login' || req.path === '/api/admin/seed') {
+    return next();
+  }
+
+  if (req.path.startsWith('/api/admin')) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Unauthorized: No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, process.env.SECRET_KEY || 'default_secret_key');
+      (req as any).admin = decoded;
+      next();
+    } catch (err) {
+      return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+    }
+  } else {
+    next();
+  }
+};
+
+app.use(authMiddleware);
 
 const sql_client = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql_client, { schema });
@@ -87,7 +119,7 @@ app.post('/api/registrations', async (req, res) => {
     });
     if (existing) return res.status(400).json({ message: 'NISN sudah terdaftar sebelumnya' });
 
-    const suffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const suffix = crypto.randomBytes(3).toString('hex').toUpperCase();
     const registrationId = `SPMB-${new Date().getFullYear()}-${suffix}`;
 
     const [row] = await db.insert(schema.registrations).values({
@@ -274,16 +306,22 @@ app.put('/api/admin/settings/:key', async (req, res) => {
       where: eq(schema.settings.key, req.params.key),
     });
 
+    let finalValue = value;
+    if (req.params.key === 'admin_password') {
+      const salt = await bcrypt.genSalt(10);
+      finalValue = await bcrypt.hash(value, salt);
+    }
+
     if (existing) {
       const [row] = await db.update(schema.settings)
-        .set({ value, updatedAt: new Date(), ...(label && { label }), ...(category && { category }) })
+        .set({ value: finalValue, updatedAt: new Date(), ...(label && { label }), ...(category && { category }) })
         .where(eq(schema.settings.key, req.params.key))
         .returning();
       res.json(row);
     } else {
       const [row] = await db.insert(schema.settings).values({
         key: req.params.key,
-        value,
+        value: finalValue,
         label: label || req.params.key,
         category: category || 'general',
       }).returning();
@@ -323,9 +361,12 @@ app.post('/api/admin/seed', async (_req, res) => {
       { key: 'school_address', value: 'Jl. Raya Gunungsari, Cilowong, Kec. Taktakan, Kota Serang, Banten', label: 'Alamat Sekolah', category: 'general' },
       { key: 'school_phone', value: '0254 7919331', label: 'No. Telepon', category: 'contact' },
       { key: 'school_email', value: 'infosmkn5@gmail.com', label: 'Email Sekolah', category: 'contact' },
-      { key: 'registration_deadline_days', value: '7', label: 'Durasi Pendaftaran (hari)', category: 'registration' },
-      { key: 'admin_password', value: 'admin2025', label: 'Password Admin', category: 'security' },
+      { key: 'registration_deadline_days', value: '7', label: 'Durasi Pendaftaran (hari)', category: 'registration' }
     ];
+
+    const salt = await bcrypt.genSalt(10);
+    const defaultHashedPassword = await bcrypt.hash('admin2025', salt);
+    defaultSettings.push({ key: 'admin_password', value: defaultHashedPassword, label: 'Password Admin', category: 'security' });
 
     for (const s of defaultSettings) {
       const existing = await db.query.settings.findFirst({ where: eq(schema.settings.key, s.key) });
@@ -358,9 +399,20 @@ app.post('/api/admin/login', async (req, res) => {
     const setting = await db.query.settings.findFirst({
       where: eq(schema.settings.key, 'admin_password'),
     });
-    const adminPw = setting?.value || 'admin2025';
-    if (password === adminPw) {
-      res.json({ success: true, token: 'admin-' + Date.now() });
+    const adminPwHash = setting?.value || '';
+
+    // Handle plaintext fallback if migrating, otherwise bcrypt compare
+    let isMatch = false;
+    if (adminPwHash === 'admin2025') {
+      // Legacy plaintext
+      isMatch = (password === 'admin2025');
+    } else {
+      isMatch = await bcrypt.compare(password, adminPwHash);
+    }
+
+    if (isMatch) {
+      const token = jwt.sign({ role: 'admin' }, process.env.SECRET_KEY || 'default_secret_key', { expiresIn: '1d' });
+      res.json({ success: true, token });
     } else {
       res.status(401).json({ message: 'Password salah' });
     }
