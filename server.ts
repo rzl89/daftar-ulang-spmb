@@ -42,16 +42,22 @@ app.use(helmet({
 }));
 
 // CORS — restrict to allowed origins
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || ['http://localhost:5173'];
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://spmb-smkn5.vercel.app',
+];
 app.use(cors({
   origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, curl, etc.)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`Origin ${origin} not allowed by CORS`));
-    }
+    // Check exact matches
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Allow vercel.app preview/staging deployments (same-origin requests)
+    if (/^https?:\/\/.*\.vercel\.app$/.test(origin)) return callback(null, true);
+    callback(new Error(`Origin ${origin} not allowed by CORS`));
   },
+  credentials: true,
 }));
 app.use(express.json({ limit: '5mb' }));
 app.use(cookieParser());
