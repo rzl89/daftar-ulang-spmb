@@ -16,7 +16,7 @@ interface PassedStudent {
   jurusanDiterima?: string;
 }
 
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 const EXCEL_HEADERS = ['NISN', 'Nama Lengkap', 'Tanggal Lahir', 'Asal Sekolah', 'Jurusan Diterima'];
 
@@ -63,11 +63,20 @@ export default function DataKelulusan() {
   };
 
   // Download template Excel
-  const handleDownloadTemplate = () => {
-    const ws = XLSX.utils.aoa_to_sheet(generateTemplateData());
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Template");
-    XLSX.writeFile(wb, "template_data_kelulusan_spmb.xlsx");
+  const handleDownloadTemplate = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Template');
+    worksheet.addRows(generateTemplateData());
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'template_data_kelulusan_spmb.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
     toast.success('Template Excel berhasil diunduh');
   };
 
@@ -87,38 +96,34 @@ export default function DataKelulusan() {
 
     setIsUploading(true);
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
-        const data = new Uint8Array(event.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        
-        // Convert to array of arrays
-        const rows = XLSX.utils.sheet_to_json<string[]>(worksheet, { header: 1 });
-        
-        if (rows.length < 2) {
+        const arrayBuffer = event.target?.result as ArrayBuffer;
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(arrayBuffer);
+
+        const worksheet = workbook.worksheets[0];
+        if (!worksheet) {
           toast.error('File Excel kosong atau format tidak sesuai template.');
           setIsUploading(false);
           return;
         }
 
-        // Skip header
-        const dataRows = rows.slice(1);
         const parsed: PassedStudent[] = [];
-
-        for (const row of dataRows) {
-          if (row.length >= 2 && row[0] && row[1]) {
+        worksheet.eachRow((row, rowNum) => {
+          if (rowNum === 1) return; // skip header
+          const nisn = row.getCell(1).value;
+          const namaLengkap = row.getCell(2).value;
+          if (nisn && namaLengkap) {
             parsed.push({
-              nisn: String(row[0]).trim(),
-              namaLengkap: String(row[1]).trim(),
-              tanggalLahir: row[2] ? String(row[2]).trim() : '',
-              asalSekolah: row[3] ? String(row[3]).trim() : '',
-              jurusanDiterima: row[4] ? String(row[4]).trim() : '',
+              nisn: String(nisn).trim(),
+              namaLengkap: String(namaLengkap).trim(),
+              tanggalLahir: row.getCell(3).value ? String(row.getCell(3).value).trim() : '',
+              asalSekolah: row.getCell(4).value ? String(row.getCell(4).value).trim() : '',
+              jurusanDiterima: row.getCell(5).value ? String(row.getCell(5).value).trim() : '',
             });
           }
-        }
+        });
 
         if (parsed.length === 0) {
           toast.error('Tidak ada data valid yang bisa dibaca.');
