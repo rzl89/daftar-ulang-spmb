@@ -28,49 +28,49 @@ Mengucapkan selamat tinggal pada formulir kertas dan proses manual yang memakan 
 
 
 
-### 2. 🔍 Real-time Verification & Status Check
+### 1. 🔍 Real-time Verification & Status Check
 Siswa dapat mengecek status kelulusan mereka secara instan menggunakan Nomor Peserta atau NISN. Sistem akan memberikan informasi *real-time* mengenai hasil seleksi.
 <p align="center">
   <img src="docs/screenshots/02-cek-kelulusan.png" alt="Cek Kelulusan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
   <br><i>*(Screenshot: Halaman cek status kelulusan peserta)*</i>
 </p>
 
-### 3. 📝 Dynamic Form Builder
+### 2. 📝 Dynamic Form Builder
 Fitur unggulan di mana Admin dapat **membuat, mengedit, dan menyusun ulang (Drag & Drop)** pertanyaan formulir pendaftaran. Mendukung berbagai tipe input (Teks, Pilihan Ganda, Tanggal, hingga Upload Dokumen).
 <p align="center">
   <img src="docs/screenshots/03-form-builder.png" alt="Dynamic Form Builder" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
   <br><i>*(Screenshot: Admin panel dengan antarmuka drag & drop untuk menyusun formulir)*</i>
 </p>
 
-### 4. ☁️ Seamless Cloud Document Upload
+### 3. ☁️ Seamless Cloud Document Upload
 Terintegrasi langsung dengan **Cloudinary**. Peserta dapat mengunggah berkas persyaratan (seperti Kartu Keluarga, Ijazah, dll) dengan cepat dan aman tanpa membebani server lokal.
 <p align="center">
   <img src="docs/screenshots/04-upload-dokumen.png" alt="Cloud Upload" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
   <br><i>*(Screenshot: Tampilan antarmuka upload dokumen oleh peserta)*</i>
 </p>
 
-### 5. 📄 Automatic PDF & QR Code Generation
+### 4. 📄 Automatic PDF & QR Code Generation
 Setelah berhasil mendaftar ulang, sistem secara otomatis menghasilkan **Bukti Daftar Ulang dalam format PDF** yang dilengkapi dengan **QR Code** unik untuk kemudahan verifikasi fisik oleh panitia.
 <p align="center">
   <img src="docs/screenshots/05-bukti-pdf.png" alt="Bukti PDF & QR Code" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
   <br><i>*(Screenshot: Hasil cetak bukti daftar ulang dengan QR Code)*</i>
 </p>
 
-### 6. 📊 Interactive Admin Dashboard & Analytics
+### 5. 📊 Interactive Admin Dashboard & Analytics
 Pusat komando bagi panitia. Memantau statistik pendaftar harian, kuota jurusan, dan status verifikasi melalui grafik interaktif yang memanjakan mata.
 <p align="center">
   <img src="docs/screenshots/06-dashboard-admin.png" alt="Admin Dashboard" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
   <br><i>*(Screenshot: Dashboard statistik dan analitik)*</i>
 </p>
 
-### 7. ✅ One-Click Verification System
+### 6. ✅ One-Click Verification System
 Panitia dapat memverifikasi berkas yang diunggah peserta dalam satu klik. Peserta akan langsung melihat perubahan status (*Diterima/Ditolak/Menunggu*) di portal mereka.
 <p align="center">
   <img src="docs/screenshots/07-verifikasi-berkas.png" alt="Sistem Verifikasi" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
   <br><i>*(Screenshot: Antarmuka verifikasi berkas oleh admin)*</i>
 </p>
 
-### 8. 📈 Excel Reporting & Export
+### 7. 📈 Excel Reporting & Export
 Butuh data untuk rekapitulasi luring? Ekspor semua data pendaftar dan status verifikasi ke dalam format Excel (.xlsx) hanya dengan satu tombol.
 <p align="center">
   <img src="docs/screenshots/08-laporan-excel.png" alt="Export Laporan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
