@@ -54,9 +54,16 @@ export default function Pengaturan() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Format tidak didukung. Gunakan JPG, PNG, WebP, atau SVG.');
+      toast.error(`Format ${file.type || 'tidak dikenal'} tidak didukung. Gunakan JPG, PNG, WebP, atau SVG.`);
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Ukuran file terlalu besar. Maksimal 10MB.');
       return;
     }
 
@@ -67,15 +74,21 @@ export default function Pengaturan() {
 
       if (!cloudName || !apiKey) {
         toast.error('Cloudinary belum dikonfigurasi. Gunakan URL/Path sebagai alternatif.');
+        setIsUploadingLogo(false);
         return;
       }
 
-      const signRes = await fetch('/api/cloudinary/sign');
-      if (!signRes.ok) throw new Error('Gagal mengambil signature');
+      // Step 1: Get upload signature
+      const signRes = await fetch('/api/cloudinary/sign', { credentials: 'same-origin' });
+      if (!signRes.ok) {
+        const errText = await signRes.text().catch(() => 'Unknown error');
+        throw new Error(`Signature error (${signRes.status}): ${errText.substring(0, 100)}`);
+      }
       const { timestamp, signature } = await signRes.json();
 
+      // Step 2: Upload to Cloudinary
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', file, file.name);
       formData.append('api_key', apiKey);
       formData.append('timestamp', timestamp.toString());
       formData.append('signature', signature);
@@ -86,16 +99,21 @@ export default function Pengaturan() {
         body: formData,
       });
 
-      if (!uploadRes.ok) throw new Error('Upload gagal');
-      const result = await uploadRes.json();
+      if (!uploadRes.ok) {
+        const errData = await uploadRes.json().catch(() => ({}));
+        throw new Error(`Upload failed (${uploadRes.status}): ${JSON.stringify(errData).substring(0, 200)}`);
+      }
 
+      const result = await uploadRes.json();
       setSettings(prev => ({ ...prev, school_logo: result.secure_url }));
       toast.success('Logo berhasil diupload!');
-    } catch (err) {
-      toast.error('Gagal mengupload logo. Coba lagi.');
+    } catch (err: any) {
+      console.error('Logo upload error:', err);
+      toast.error(err?.message || 'Gagal mengupload logo. Coba lagi.');
     } finally {
       setIsUploadingLogo(false);
-      if (e.target) e.target.value = '';
+      const input = document.querySelector('input[type="file"][accept*="image/png"]') as HTMLInputElement;
+      if (input) input.value = '';
     }
   };
 
