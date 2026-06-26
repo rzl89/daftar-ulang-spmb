@@ -34,7 +34,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
       fontSrc: ["'self'"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "https://api.cloudinary.com"],
       frameAncestors: ["'none'"],
       formAction: ["'self'"],
     },
