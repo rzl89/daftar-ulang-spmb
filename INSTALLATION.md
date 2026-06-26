@@ -59,10 +59,23 @@ API Server berjalan secara otomatis di *background* pada port `3000` dan di-*pro
 
 ## Akun Admin Default
 
-Saat pertama kali dijalankan, sistem tidak meminta login database default. Jika Anda telah mengaktifkan sistem login, pastikan untuk membaca panduan lebih lanjut terkait pembuatan akun Admin pertama, atau login menggunakan:
-* **Username:** admin
-* **Password:** admin
-*(Harap segera ubah pengaturan ini pada sistem produksi!)*
+Sistem menggunakan password admin yang dikonfigurasi saat seeding. Ada dua cara:
+
+### Cara 1: Set password via environment variable (Recommended)
+Tambahkan di file `.env`:
+```
+DEFAULT_ADMIN_PASSWORD=password_pilihan_anda
+```
+Lalu jalankan seed: `POST /api/admin/seed`
+
+### Cara 2: Password acak
+Jika `DEFAULT_ADMIN_PASSWORD` tidak diset, seed akan generate password acak 16 karakter.
+Password akan ditampilkan di console log server.
+
+### Setelah login pertama
+Segera ubah password melalui halaman **Admin → Pengaturan**. Password disimpan sebagai bcrypt hash di tabel `settings`.
+
+> ⚠️ **PENTING:** Jangan gunakan password default di production. Ganti segera setelah instalasi.
 
 ---
 

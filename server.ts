@@ -45,7 +45,6 @@ app.use(helmet({
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://spmb-smkn5.vercel.app',
 ];
 app.use(cors({
   origin: (origin, callback) => {
@@ -463,12 +462,8 @@ app.put('/api/admin/settings/:key', async (req, res) => {
 app.post('/api/admin/seed', async (_req, res) => {
   try {
     const defaultJurusan = [
-      { code: 'TJKT', name: 'Teknik Jaringan Komputer dan Telekomunikasi', quota: 36, sortOrder: 1 },
-      { code: 'PPLG', name: 'Pengembangan Perangkat Lunak dan Gim', quota: 36, sortOrder: 2 },
-      { code: 'DKV', name: 'Desain Komunikasi Visual', quota: 36, sortOrder: 3 },
-      { code: 'AKL', name: 'Akuntansi dan Keuangan Lembaga', quota: 36, sortOrder: 4 },
-      { code: 'MP', name: 'Manajemen Perkantoran', quota: 36, sortOrder: 5 },
-      { code: 'BDP', name: 'Bisnis Daring dan Pemasaran', quota: 36, sortOrder: 6 },
+      { code: 'JURUSAN1', name: 'Nama Jurusan 1', quota: 36, sortOrder: 1 },
+      { code: 'JURUSAN2', name: 'Nama Jurusan 2', quota: 36, sortOrder: 2 },
     ];
 
     for (const j of defaultJurusan) {
@@ -479,17 +474,18 @@ app.post('/api/admin/seed', async (_req, res) => {
     }
 
     const defaultSettings = [
-      { key: 'school_name', value: 'SMKN 5 KOTA SERANG', label: 'Nama Sekolah', category: 'general' },
-      { key: 'school_full_name', value: 'SMK Negeri 5 Kota Serang', label: 'Nama Lengkap Sekolah', category: 'general' },
-      { key: 'school_year', value: '2025/2026', label: 'Tahun Ajaran', category: 'general' },
-      { key: 'school_address', value: 'Jl. Raya Gunungsari, Cilowong, Kec. Taktakan, Kota Serang, Banten', label: 'Alamat Sekolah', category: 'general' },
-      { key: 'school_phone', value: '0254 7919331', label: 'No. Telepon', category: 'contact' },
-      { key: 'school_email', value: 'infosmkn5@gmail.com', label: 'Email Sekolah', category: 'contact' },
+      { key: 'school_name', value: 'NAMA SEKOLAH', label: 'Nama Sekolah', category: 'general' },
+      { key: 'school_full_name', value: 'Nama Lengkap Sekolah', label: 'Nama Lengkap Sekolah', category: 'general' },
+      { key: 'school_year', value: 'YYYY/YYYY', label: 'Tahun Ajaran', category: 'general' },
+      { key: 'school_address', value: 'Alamat Sekolah', label: 'Alamat Sekolah', category: 'general' },
+      { key: 'school_phone', value: '(021) 12345678', label: 'No. Telepon', category: 'contact' },
+      { key: 'school_email', value: 'email@sekolah.sch.id', label: 'Email Sekolah', category: 'contact' },
       { key: 'registration_deadline_days', value: '7', label: 'Durasi Pendaftaran (hari)', category: 'registration' }
     ];
 
     const salt = await bcrypt.genSalt(10);
-    const defaultHashedPassword = await bcrypt.hash('admin2025', salt);
+    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || crypto.randomBytes(8).toString('hex');
+    const defaultHashedPassword = await bcrypt.hash(adminPassword, salt);
     defaultSettings.push({ key: 'admin_password', value: defaultHashedPassword, label: 'Password Admin', category: 'security' });
 
     for (const s of defaultSettings) {
@@ -507,7 +503,8 @@ app.post('/api/admin/seed', async (_req, res) => {
     });
 
     console.log('🌱 Seed completed');
-    res.json({ message: 'Seed berhasil' });
+    console.log(`🔐 Default admin password: ${adminPassword} — change it immediately via Pengaturan page.`);
+    res.json({ message: 'Seed berhasil', adminPassword: process.env.DEFAULT_ADMIN_PASSWORD ? undefined : adminPassword });
   } catch (e: any) {
     console.error('Seed error:', e);
     res.status(500).json({ message: 'Terjadi kesalahan server saat seeding' });

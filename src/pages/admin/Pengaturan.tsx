@@ -17,7 +17,7 @@ export default function Pengaturan() {
     school_phone: '',
     is_registration_open: 'true',
     registration_deadline: '',
-    school_logo: '/Logo SKEMA.png',
+    school_logo: '',
     theme_color_primary: '#1A237E',
     theme_color_secondary: '#F9A825'
   });
@@ -183,11 +183,11 @@ export default function Pengaturan() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-1.5">
                         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nama Singkat Sekolah</label>
-                        <input type="text" name="school_name" value={settings.school_name} onChange={handleChange} placeholder="Misal: SMKN 5 KOTA SERANG" className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all dark:text-white" />
+                        <input type="text" name="school_name" value={settings.school_name} onChange={handleChange} placeholder="Misal: NAMA SEKOLAH" className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all dark:text-white" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nama Lengkap Sekolah</label>
-                        <input type="text" name="school_full_name" value={settings.school_full_name} onChange={handleChange} placeholder="Misal: SMK Negeri 5 Kota Serang" className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all dark:text-white" />
+                        <input type="text" name="school_full_name" value={settings.school_full_name} onChange={handleChange} placeholder="Misal: Nama Lengkap Sekolah" className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all dark:text-white" />
                       </div>
                     </div>
 
@@ -247,10 +247,10 @@ export default function Pengaturan() {
                         name="school_logo"
                         value={settings.school_logo} 
                         onChange={handleChange}
-                        placeholder="/Logo SKEMA.png"
+                        placeholder="/Logo Sekolah.png"
                         className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all dark:text-white" 
                       />
-                      <p className="text-xs text-slate-500">Gunakan path relatif dari folder public (misal: `/Logo SKEMA.png`) atau URL gambar eksternal.</p>
+                      <p className="text-xs text-slate-500">Gunakan path relatif dari folder public (misal: `/Logo Sekolah.png`) atau URL gambar eksternal.</p>
                       {settings.school_logo && (
                         <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center">
                           <img src={settings.school_logo} alt="Preview Logo" className="h-16 object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />

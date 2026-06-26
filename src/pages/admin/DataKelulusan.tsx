@@ -23,9 +23,9 @@ const EXCEL_HEADERS = ['NISN', 'Nama Lengkap', 'Tanggal Lahir', 'Asal Sekolah', 
 function generateTemplateData() {
   return [
     EXCEL_HEADERS,
-    ['0012345678', 'Ahmad Rizki Pratama', '2009-05-15', 'SMP Negeri 1 Serang', 'PPLG'],
-    ['0012345679', 'Siti Nurhaliza', '2009-08-22', 'SMP Negeri 2 Serang', 'TJKT'],
-    ['0012345680', 'Budi Santoso', '2010-01-10', 'MTs Negeri 1 Serang', 'DKV'],
+    ['0012345678', 'Contoh Nama Siswa 1', '2009-01-15', 'SMP N 1 Contoh', 'JURUSAN1'],
+    ['0012345679', 'Contoh Nama Siswa 2', '2009-02-20', 'SMP N 2 Contoh', 'JURUSAN2'],
+    ['0012345680', 'Contoh Nama Siswa 3', '2009-03-10', 'MTs N 1 Contoh', 'JURUSAN1'],
   ];
 }
 

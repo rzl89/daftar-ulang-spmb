@@ -1,7 +1,7 @@
 # Skills for SPMB Re-Registration Web
 
 ## Project Goal
-Build a professional, clean, trustworthy, and easy-to-use re-registration website for SMKN 5 Kota Serang. The interface should feel official, well-structured, and suitable for school administration, students, and parents/guardians.
+Build a professional, clean, trustworthy, and easy-to-use re-registration website for a vocational high school. The interface should feel official, well-structured, and suitable for school administration, students, and parents/guardians.
 
 ## Core Principles
 - Prioritize clarity, simplicity, and trust.

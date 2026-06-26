@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { PageWrapper } from "@/components/layout";
 import { Card, CardContent, Button, Input } from "@/components/ui";
-import { SCHOOL } from "@/constants/school";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { toast } from "sonner";
 
 const contactSchema = z.object({
@@ -30,6 +30,7 @@ type ContactForm = z.infer<typeof contactSchema>;
 
 
 export default function Kontak() {
+  const getSetting = useSettingsStore(s => s.getSetting);
   const {
     register,
     handleSubmit,
@@ -82,7 +83,7 @@ export default function Kontak() {
                       </div>
                       <div>
                         <p className="text-xs text-white/40 uppercase tracking-wider font-medium">Alamat</p>
-                        <p className="text-sm text-white/80 mt-0.5">{SCHOOL.address}</p>
+                        <p className="text-sm text-white/80 mt-0.5">{getSetting('school_address')}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -91,7 +92,7 @@ export default function Kontak() {
                       </div>
                       <div>
                         <p className="text-xs text-white/40 uppercase tracking-wider font-medium">Telepon</p>
-                        <p className="text-sm text-white/80 mt-0.5">{SCHOOL.phone}</p>
+                        <p className="text-sm text-white/80 mt-0.5">{getSetting('school_phone')}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -100,8 +101,8 @@ export default function Kontak() {
                       </div>
                       <div>
                         <p className="text-xs text-white/40 uppercase tracking-wider font-medium">Email</p>
-                        <a href={`mailto:${SCHOOL.email}`} className="text-sm text-white/80 mt-0.5 hover:text-gold transition-colors">
-                          {SCHOOL.email}
+                        <a href={`mailto:${getSetting('school_email')}`} className="text-sm text-white/80 mt-0.5 hover:text-gold transition-colors">
+                          {getSetting('school_email')}
                         </a>
                       </div>
                     </div>
@@ -111,8 +112,8 @@ export default function Kontak() {
                       </div>
                       <div>
                         <p className="text-xs text-white/40 uppercase tracking-wider font-medium">Website</p>
-                        <a href={`https://${SCHOOL.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-white/80 mt-0.5 hover:text-gold transition-colors">
-                          {SCHOOL.website}
+                        <a href={`https://${getSetting('school_website')}`} target="_blank" rel="noopener noreferrer" className="text-sm text-white/80 mt-0.5 hover:text-gold transition-colors">
+                          {getSetting('school_website')}
                         </a>
                       </div>
                     </div>
@@ -132,15 +133,15 @@ export default function Kontak() {
                   <div className="pt-4 border-t border-white/10">
                     <p className="text-xs text-white/40 uppercase tracking-wider font-medium mb-3">Sosial Media</p>
                     <div className="flex gap-3">
-                      <a href="https://instagram.com/smkn5kotaserang" target="_blank" rel="noopener noreferrer"
+                      <a href="https://instagram.com/sekolah" target="_blank" rel="noopener noreferrer"
                         className="w-10 h-10 rounded-xl bg-white/10 hover:bg-gold/20 flex items-center justify-center transition-colors group" aria-label="Instagram">
                         <Camera className="h-5 w-5 text-white/60 group-hover:text-gold transition-colors" />
                       </a>
-                      <a href="https://facebook.com/smkn5kotaserang" target="_blank" rel="noopener noreferrer"
+                      <a href="https://facebook.com/sekolah" target="_blank" rel="noopener noreferrer"
                         className="w-10 h-10 rounded-xl bg-white/10 hover:bg-gold/20 flex items-center justify-center transition-colors group" aria-label="Facebook">
                         <ThumbsUp className="h-5 w-5 text-white/60 group-hover:text-gold transition-colors" />
                       </a>
-                      <a href="https://youtube.com/@smkn5kotaserang" target="_blank" rel="noopener noreferrer"
+                      <a href="https://youtube.com/@sekolah" target="_blank" rel="noopener noreferrer"
                         className="w-10 h-10 rounded-xl bg-white/10 hover:bg-gold/20 flex items-center justify-center transition-colors group" aria-label="YouTube">
                         <Play className="h-5 w-5 text-white/60 group-hover:text-gold transition-colors" />
                       </a>
@@ -222,7 +223,7 @@ export default function Kontak() {
           <Card className="overflow-hidden p-0">
             <div className="aspect-21/6 bg-navy/5 flex items-center justify-center relative">
               <iframe
-                title="Lokasi SMKN 5 Kota Serang"
+                title="Lokasi Sekolah"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.0!2d106.14!3d-6.13!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwMDgnMDAuMCJTIDEwNsKwMDgnMDAuMCJF!5e0!3m2!1sid!2sid!4v1000000000000"
                 className="absolute inset-0 w-full h-full border-0"
                 loading="lazy"

@@ -1,12 +1,12 @@
 export const SCHOOL = {
-  name: "SMKN 5 KOTA SERANG",
-  fullName: "SMK Negeri 5 Kota Serang",
-  tagline: "Disiplin, Cerdas dan Terampil",
-  address: "Jl. Raya Gunungsari, Cilowong, Kec. Taktakan, Kota Serang, Banten",
-  phone: "0254 7919331",
-  email: "infosmkn5@gmail.com",
-  website: "www.smkn5kotaserang.sch.id",
-  year: "2025/2026",
+  name: "NAMA SEKOLAH",
+  fullName: "Nama Lengkap Sekolah",
+  tagline: "Tagline Sekolah",
+  address: "Alamat Sekolah",
+  phone: "(021) 12345678",
+  email: "email@sekolah.sch.id",
+  website: "www.sekolah.sch.id",
+  year: "YYYY/YYYY",
 } as const;
 
 // Registration deadline: 7 days from today
@@ -26,12 +26,8 @@ export const NAV_LINKS = [
 ] as const;
 
 export const JURUSAN = [
-  { code: "TJKT", name: "Teknik Jaringan Komputer dan Telekomunikasi" },
-  { code: "PPLG", name: "Pengembangan Perangkat Lunak dan Gim" },
-  { code: "DKV", name: "Desain Komunikasi Visual" },
-  { code: "AKL", name: "Akuntansi dan Keuangan Lembaga" },
-  { code: "MP", name: "Manajemen Perkantoran" },
-  { code: "BDP", name: "Bisnis Daring dan Pemasaran" },
+  { code: "JURUSAN1", name: "Nama Jurusan 1" },
+  { code: "JURUSAN2", name: "Nama Jurusan 2" },
 ] as const;
 
 export const REQUIRED_DOCUMENTS = [
@@ -46,7 +42,7 @@ export const REQUIRED_DOCUMENTS = [
 ] as const;
 
 export const SOCIAL_LINKS = [
-  { name: "Instagram", url: "https://instagram.com/smkn5kotaserang", icon: "instagram" },
-  { name: "Facebook", url: "https://facebook.com/smkn5kotaserang", icon: "facebook" },
-  { name: "YouTube", url: "https://youtube.com/@smkn5kotaserang", icon: "youtube" },
+  { name: "Instagram", url: "https://instagram.com/sekolah", icon: "instagram" },
+  { name: "Facebook", url: "https://facebook.com/sekolah", icon: "facebook" },
+  { name: "YouTube", url: "https://youtube.com/@sekolah", icon: "youtube" },
 ] as const;

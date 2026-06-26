@@ -1,12 +1,21 @@
 {
-  "name": "spmb-smkn5",
-  "private": true,
-  "version": "0.0.0",
+  "name": "spmb-daftar-ulang",
+  "version": "1.0.0",
+  "description": "SPMB Registration Platform — Modern school re-registration system with dynamic forms, PDF generation, and admin dashboard",
   "type": "module",
+  "author": "SPMB Registration System",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rzl89/daftar-ulang-spmb.git"
+  },
+  "keywords": ["spmb", "daftar-ulang", "sekolah", "registration", "react", "express"],
   "scripts": {
     "dev": "concurrently \"vite\" \"tsx watch server.ts\"",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.0",

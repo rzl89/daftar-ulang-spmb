@@ -42,6 +42,7 @@ export default function AdminLayout() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const schoolName = useSettingsStore(s => s.getSetting('school_name'));
   const schoolLogo = useSettingsStore(s => s.getSetting('school_logo'));
+  const schoolEmail = useSettingsStore(s => s.getSetting('school_email'));
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -254,7 +255,7 @@ export default function AdminLayout() {
               <div className="flex items-center gap-3">
                 <div className="hidden sm:block text-right">
                   <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Admin Utama</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">admin@smkn5.sch.id</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{schoolEmail}</p>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center text-primary font-extrabold shadow-sm ring-2 ring-white dark:ring-slate-800">
                   A

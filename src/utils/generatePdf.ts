@@ -18,6 +18,7 @@ export function generateBuktiPdf(data: PdfData): void {
   const schoolAddress = settings.getSetting('school_address');
   const schoolPhone = settings.getSetting('school_phone');
   const schoolEmail = settings.getSetting('school_email');
+  const schoolCity = settings.getSetting('school_city') || 'Kota';
 
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -124,7 +125,7 @@ export function generateBuktiPdf(data: PdfData): void {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   const dateStr = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
-  doc.text(`Serang, ${dateStr}`, pageWidth - margin, y, { align: 'right' });
+  doc.text(`${schoolCity}, ${dateStr}`, pageWidth - margin, y, { align: 'right' });
 
   y += 5;
   doc.text('Panitia SPMB', pageWidth - margin, y, { align: 'right' });

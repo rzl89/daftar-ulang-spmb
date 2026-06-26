@@ -27,18 +27,18 @@ interface SettingsState {
 
 // Fallback defaults (used before API data loads)
 const DEFAULTS: Omit<SettingsState, 'isLoaded' | 'fetchSettings' | 'getSetting'> & Record<string, string> = {
-  school_name: 'SMKN 5 KOTA SERANG',
-  school_full_name: 'SMK Negeri 5 Kota Serang',
-  school_year: '2025/2026',
-  school_address: 'Jl. Raya Gunungsari, Cilowong, Kec. Taktakan, Kota Serang, Banten',
-  school_phone: '0254 7919331',
-  school_email: 'infosmkn5@gmail.com',
-  school_website: 'www.smkn5kotaserang.sch.id',
-  school_tagline: 'Disiplin, Cerdas dan Terampil',
+  school_name: 'NAMA SEKOLAH',
+  school_full_name: 'Nama Lengkap Sekolah',
+  school_year: 'YYYY/YYYY',
+  school_address: 'Alamat Sekolah',
+  school_phone: '(021) 12345678',
+  school_email: 'email@sekolah.sch.id',
+  school_website: 'www.sekolah.sch.id',
+  school_tagline: 'Tagline Sekolah',
   is_registration_open: 'true',
-  quota: '320',
+  quota: '100',
   registration_deadline: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-  school_logo: '/Logo SKEMA.png',
+  school_logo: '',
   theme_color_primary: '#1A237E',
   theme_color_secondary: '#F9A825',
 };

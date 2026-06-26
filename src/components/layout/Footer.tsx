@@ -9,7 +9,6 @@ import {
   Camera,
   ThumbsUp,
   Play,
-  Heart,
   ArrowUpRight,
 } from "lucide-react";
 import { NAV_LINKS } from "@/constants/school";
@@ -142,7 +141,7 @@ export function Footer() {
             </h4>
             <div className="flex items-center gap-3">
               <a
-                href="https://instagram.com/smkn5kotaserang"
+                href="https://instagram.com/sekolah"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 rounded-lg bg-white/10 hover:bg-accent/20 flex items-center justify-center transition-colors group"
@@ -151,7 +150,7 @@ export function Footer() {
                 <Camera className="h-4 w-4 text-white/60 group-hover:text-accent transition-colors" />
               </a>
               <a
-                href="https://facebook.com/smkn5kotaserang"
+                href="https://facebook.com/sekolah"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 rounded-lg bg-white/10 hover:bg-accent/20 flex items-center justify-center transition-colors group"
@@ -160,7 +159,7 @@ export function Footer() {
                 <ThumbsUp className="h-4 w-4 text-white/60 group-hover:text-accent transition-colors" />
               </a>
               <a
-                href="https://youtube.com/@smkn5kotaserang"
+                href="https://youtube.com/@sekolah"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 rounded-lg bg-white/10 hover:bg-accent/20 flex items-center justify-center transition-colors group"
@@ -178,7 +177,7 @@ export function Footer() {
             © {currentYear} {fullName}. Hak Cipta Dilindungi.
           </p>
           <p className="text-white/30 text-xs flex items-center gap-1">
-            Dibuat oleh <a href="https://www.tiktok.com/@rizaa119" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">rizaldev</a> dengan <Heart className="h-3 w-3 text-danger fill-danger" /> untuk pendidikan Indonesia
+            Powered by SPMB Registration System
           </p>
         </div>
       </div>

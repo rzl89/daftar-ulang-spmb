@@ -5,6 +5,6 @@ export default defineConfig({
   out: './db/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'postgres://user:password@localhost:5432/spmb',
+    url: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/your_database?sslmode=require',
   },
 });

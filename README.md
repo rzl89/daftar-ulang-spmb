@@ -31,50 +31,50 @@ Mengucapkan selamat tinggal pada formulir kertas dan proses manual yang memakan 
 ### 1. 🔍 Real-time Verification & Status Check
 Siswa dapat mengecek status kelulusan mereka secara instan menggunakan Nomor Peserta atau NISN. Sistem akan memberikan informasi *real-time* mengenai hasil seleksi.
 <p align="center">
-  <img src="docs/screenshots/02-cek-kelulusan.png" alt="Cek Kelulusan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
-  <br><i>*(Screenshot: Halaman cek status kelulusan peserta)*</i>
+  <p align="center">
+  <i>📸 Screenshots available upon request.</i>
 </p>
 
 ### 2. 📝 Dynamic Form Builder
 Fitur unggulan di mana Admin dapat **membuat, mengedit, dan menyusun ulang (Drag & Drop)** pertanyaan formulir pendaftaran. Mendukung berbagai tipe input (Teks, Pilihan Ganda, Tanggal, hingga Upload Dokumen).
 <p align="center">
-  <img src="docs/screenshots/03-form-builder.png" alt="Dynamic Form Builder" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
-  <br><i>*(Screenshot: Admin panel dengan antarmuka drag & drop untuk menyusun formulir)*</i>
+  <p align="center">
+  <i>📸 Screenshots available upon request.</i>
 </p>
 
 ### 3. ☁️ Seamless Cloud Document Upload
 Terintegrasi langsung dengan **Cloudinary**. Peserta dapat mengunggah berkas persyaratan (seperti Kartu Keluarga, Ijazah, dll) dengan cepat dan aman tanpa membebani server lokal.
 <p align="center">
-  <img src="docs/screenshots/04-upload-dokumen.png" alt="Cloud Upload" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
-  <br><i>*(Screenshot: Tampilan antarmuka upload dokumen oleh peserta)*</i>
+  <p align="center">
+  <i>📸 Screenshots available upon request.</i>
 </p>
 
 ### 4. 📄 Automatic PDF & QR Code Generation
 Setelah berhasil mendaftar ulang, sistem secara otomatis menghasilkan **Bukti Daftar Ulang dalam format PDF** yang dilengkapi dengan **QR Code** unik untuk kemudahan verifikasi fisik oleh panitia.
 <p align="center">
-  <img src="docs/screenshots/05-bukti-pdf.png" alt="Bukti PDF & QR Code" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
-  <br><i>*(Screenshot: Hasil cetak bukti daftar ulang dengan QR Code)*</i>
+  <p align="center">
+  <i>📸 Screenshots available upon request.</i>
 </p>
 
 ### 5. 📊 Interactive Admin Dashboard & Analytics
 Pusat komando bagi panitia. Memantau statistik pendaftar harian, kuota jurusan, dan status verifikasi melalui grafik interaktif yang memanjakan mata.
 <p align="center">
-  <img src="docs/screenshots/06-dashboard-admin.png" alt="Admin Dashboard" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
-  <br><i>*(Screenshot: Dashboard statistik dan analitik)*</i>
+  <p align="center">
+  <i>📸 Screenshots available upon request.</i>
 </p>
 
 ### 6. ✅ One-Click Verification System
 Panitia dapat memverifikasi berkas yang diunggah peserta dalam satu klik. Peserta akan langsung melihat perubahan status (*Diterima/Ditolak/Menunggu*) di portal mereka.
 <p align="center">
-  <img src="docs/screenshots/07-verifikasi-berkas.png" alt="Sistem Verifikasi" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
-  <br><i>*(Screenshot: Antarmuka verifikasi berkas oleh admin)*</i>
+  <p align="center">
+  <i>📸 Screenshots available upon request.</i>
 </p>
 
 ### 7. 📈 Excel Reporting & Export
 Butuh data untuk rekapitulasi luring? Ekspor semua data pendaftar dan status verifikasi ke dalam format Excel (.xlsx) hanya dengan satu tombol.
 <p align="center">
-  <img src="docs/screenshots/08-laporan-excel.png" alt="Export Laporan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
-  <br><i>*(Screenshot: Menu laporan dan rekapitulasi data)*</i>
+  <p align="center">
+  <i>📸 Screenshots available upon request.</i>
 </p>
 
 ---
@@ -147,11 +147,44 @@ Ingin mencoba atau mengembangkan platform ini secara lokal? Ikuti langkah-langka
 
 ---
 
-## 📝 License
+## 💰 Pricing & License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+This project is sold under a **Single Use License Agreement**. One purchase = one school/domain installation.
+
+See `LICENSE` for full terms. Key points:
+- ✅ Use on a single school domain
+- ✅ Modify and customize freely
+- ✅ Full source code included
+- ❌ No redistribution or resale
+- ❌ No SaaS/multi-tenant use
 
 ---
-<div align="center">
-  Dibuat dengan ❤️ untuk kemajuan pendidikan digital.
-</div>
+
+## 📦 What's Included
+
+| Item | Description |
+|------|-------------|
+| Full Source Code | React frontend + Express backend |
+| Admin Dashboard | Data management, verification, reports |
+| Dynamic Form Builder | Drag-and-drop question configuration |
+| PDF Generation | Auto-generate registration proof with QR |
+| Excel Import/Export | Bulk data management |
+| Installation Guide | Step-by-step setup documentation |
+| Vercel Deploy Config | Ready for serverless deployment |
+
+---
+
+## 📞 Contact & Support
+
+For purchase inquiries, customization requests, or support:
+
+- 📧 **Email:** [Hubungi via Email](mailto:contact@example.com)
+- 💬 **WhatsApp:** [Hubungi via WhatsApp](https://wa.me/62xxxxxxxx)
+
+*Response time: 1-2 business days.*
+
+---
+
+## 📝 License
+
+This project is licensed under the **Single Use License Agreement**. See `LICENSE` for details.
