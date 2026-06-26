@@ -138,14 +138,32 @@ Ingin mencoba atau mengembangkan platform ini secara lokal? Ikuti langkah-langka
    # Database Configuration (Neon)
    DATABASE_URL="postgresql://user:password@ep-xxx.neon.tech/dbname?sslmode=require"
 
-   # Security Token
-   SECRET_KEY="ganti_dengan_kunci_rahasia_anda_yang_panjang_dan_aman"
+   # Security Token — generate dengan perintah di bawah
+   SECRET_KEY=""
 
    # Cloudinary Configuration
    VITE_CLOUDINARY_CLOUD_NAME="your_cloud_name"
    VITE_CLOUDINARY_API_KEY="your_api_key"
    CLOUDINARY_API_SECRET="your_api_secret"
    ```
+
+   **🔐 Cara generate SECRET_KEY:**
+   
+   Jangan mengisi SECRET_KEY dengan teks sembarangan. Gunakan perintah berikut:
+   
+   | Sistem Operasi | Perintah |
+   |---------------|----------|
+   | **Linux / macOS** | `openssl rand -hex 64` |
+   | **Windows (PowerShell)** | `-join ((48..57)+(65..90)+(97..122) \| Get-Random -Count 128 \| % {[char]$_})` |
+   | **Windows (Git Bash)** | `openssl rand -hex 64` |
+   
+   Hasilnya berupa string hex 128 karakter, contoh:
+   ```
+   9eb136d5ae1c6e1a92bef7f3bc06e976642ac9030a0be30ff5db2a9020242080f3234d6c8564e34abfcd2a530a99e3441e5bc13e225f0f9045974068248491d6
+   ```
+   
+   Copy hasil generate ke kolom `SECRET_KEY=` di file `.env`. 
+   ⚠️ **PENTING:** Jangan gunakan contoh di atas — generate sendiri!
 
 4. **Jalankan Database Migrations (Opsional jika DB baru)**
    *(Pastikan Anda telah mengonfigurasi skema Drizzle di folder `db/`)*
