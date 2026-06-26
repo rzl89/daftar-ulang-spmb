@@ -203,7 +203,13 @@ For purchase inquiries, customization requests, or support:
 
 *Response time: 1-2 business days.*
 
----
+## ☕ Dukung Proyek Ini
+
+Jika proyek ini membantu Anda menghemat waktu, mempermudah pekerjaan, atau sekadar membuat Anda tersenyum, pertimbangkan untuk memberikan sedikit dukungan! Uang kopi Anda sangat berarti untuk menjaga proyek ini tetap aktif dan diperbarui.
+
+👉 **[Sawer saya di Saweria](https://saweria.co/afrizalfirdaus)**
+
+Terima kasih banyak atas apresiasi dan dukungan Anda! 🙌
 
 ## 📝 License
 
