@@ -67,10 +67,15 @@ function AppLayout() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Alert banner only on Beranda or specific pages */}
-      {!isAdmin && location.pathname === "/" && <AlertBanner />}
-      
-      {!isAdmin && <Navbar />}
+      {/* Alert banner + Navbar fixed together */}
+      {!isAdmin && (
+        <div className="fixed top-0 left-0 right-0 z-50">
+          {location.pathname === "/" && <AlertBanner />}
+          <Navbar />
+        </div>
+      )}
+      {/* Spacer to push content below fixed header */}
+      {!isAdmin && <div className={location.pathname === "/" ? "h-[104px]" : "h-[72px]"} />}
       
       <main className="flex-1 w-full bg-slate-50/50">
         <Suspense fallback={<PageLoader />}>
