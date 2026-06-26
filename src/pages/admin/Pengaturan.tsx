@@ -331,10 +331,10 @@ export default function Pengaturan() {
                           />
                         </label>
                       </div>
-                      <p className="text-xs text-slate-500">Masukkan URL/Path logo, atau upload file JPG/PNG/WebP/SVG langsung ke Cloudinary.</p>
+                      <p className="text-xs text-slate-500">Masukkan URL logo, atau upload file JPG/PNG/WebP/SVG dari perangkat Anda.</p>
                       {settings.school_logo && (
                         <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center">
-                          <img src={settings.school_logo} alt="Preview Logo" className="h-16 object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                          <img src={settings.school_logo} alt="Preview Logo" className="h-24 max-w-full object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
                         </div>
                       )}
                     </div>

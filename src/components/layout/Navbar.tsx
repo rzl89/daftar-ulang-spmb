@@ -41,7 +41,7 @@ export function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             {schoolLogo ? (
-              <img src={schoolLogo} alt="Logo" width={40} height={40} className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
+              <img src={schoolLogo} alt="Logo" width={48} height={48} className="w-12 h-12 object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
             ) : (
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow">
                 <GraduationCap className="h-6 w-6 text-accent" />
