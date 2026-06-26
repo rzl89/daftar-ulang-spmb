@@ -180,8 +180,8 @@ Ingin mencoba atau mengembangkan platform ini secara lokal? Ikuti langkah-langka
 
 For purchase inquiries, customization requests, or support:
 
-- 📧 **Email:** [Hubungi via Email](mailto:contact@example.com)
-- 💬 **WhatsApp:** [Hubungi via WhatsApp](https://wa.me/62xxxxxxxx)
+- 📧 **Email:** [Hubungi via Email](mailto:afrizalfirdaus277@gmail.com)
+- 💬 **WhatsApp:** [Hubungi via WhatsApp](https://wa.me/6285217975733)
 
 *Response time: 1-2 business days.*
 
