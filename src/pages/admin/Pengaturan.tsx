@@ -53,8 +53,9 @@ export default function Pengaturan() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      // Save each setting sequentially
+      // Save each setting sequentially (skip empty optional fields)
       for (const [key, value] of Object.entries(settings)) {
+        if (value === '' && (key === 'registration_deadline' || key === 'school_logo')) continue;
         await apiFetch(`/api/admin/settings/${key}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

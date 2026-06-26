@@ -2,8 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, UserCircle2, GraduationCap, Award, Calendar, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { Button, Card, CardContent, Input } from "@/components/ui";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 export default function Verifikasi() {
+  const getSetting = useSettingsStore(s => s.getSetting);
+  const registrationDeadline = getSetting('registration_deadline');
   const [nisn, setNisn] = useState("");
   const [tglLahir, setTglLahir] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -137,7 +140,11 @@ export default function Verifikasi() {
                         <Calendar className="w-4 h-4" />
                         <span className="text-xs font-semibold uppercase">Batas Daftar Ulang</span>
                       </div>
-                      <p className="font-bold text-amber-700">Sesuai Jadwal Sekolah</p>
+                      <p className="font-bold text-amber-700">
+                        {registrationDeadline
+                          ? new Date(registrationDeadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                          : 'Segera — Jangan Sampai Terlewat'}
+                      </p>
                     </div>
                   </div>
 

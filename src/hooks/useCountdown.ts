@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { getTimeRemaining } from "@/utils";
-import { REGISTRATION_DEADLINE } from "@/constants/school";
+import { getRegistrationDeadline } from "@/constants/school";
 
-export function useCountdown(deadline: Date = REGISTRATION_DEADLINE) {
-  const [timeLeft, setTimeLeft] = useState(getTimeRemaining(deadline));
+export function useCountdown(deadline?: Date) {
+  const targetDeadline = deadline || getRegistrationDeadline();
+  const [timeLeft, setTimeLeft] = useState(getTimeRemaining(targetDeadline));
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const remaining = getTimeRemaining(deadline);
+      const remaining = getTimeRemaining(targetDeadline);
       setTimeLeft(remaining);
       if (remaining.total <= 0) {
         clearInterval(timer);
@@ -15,7 +16,7 @@ export function useCountdown(deadline: Date = REGISTRATION_DEADLINE) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [deadline]);
+  }, [targetDeadline]);
 
   const isExpired = timeLeft.total <= 0;
   const isUrgent = timeLeft.days <= 2;

@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Upload, FileText, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight } from "lucide-react";
+import { Upload, FileText, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Clock } from "lucide-react";
 import { Button, Card, CardContent, Input, Select, Stepper } from "@/components/ui";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 const STEPS = ["Data Pribadi", "Data Orang Tua", "Data Akademik", "Upload & Konfirmasi"];
 
@@ -206,6 +207,38 @@ export default function DaftarUlang() {
     { value: "", label: "-- Pilih Jurusan --" },
     ...jurusanList.map(j => ({ value: j.code, label: j.name }))
   ];
+
+  // Check if registration is still open
+  const getSetting = useSettingsStore(s => s.getSetting);
+  const isRegistrationOpen = getSetting('is_registration_open');
+  const deadline = getSetting('registration_deadline');
+  const isPastDeadline = deadline ? new Date() > new Date(deadline) : false;
+  const isClosed = isRegistrationOpen === 'false' || isPastDeadline;
+
+  if (isClosed) {
+    return (
+      <div className="w-full min-h-screen pt-32 pb-12 px-4 md:px-8 xl:max-w-6xl mx-auto flex items-center justify-center">
+        <Card className="shadow-xl shadow-slate-200/50 border-0 max-w-lg w-full text-center">
+          <CardContent>
+            <div className="w-20 h-20 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto">
+              <Clock className="w-10 h-10 text-amber-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-slate-800 mt-6 mb-2">Pendaftaran Ditutup</h1>
+            <p className="text-slate-500 mb-4">
+              {isPastDeadline
+                ? 'Batas waktu daftar ulang telah berakhir. Silakan hubungi panitia untuk informasi lebih lanjut.'
+                : 'Pendaftaran sedang ditutup sementara oleh admin. Silakan cek kembali nanti.'}
+            </p>
+            {deadline && (
+              <p className="text-sm text-slate-400">
+                Deadline: {new Date(deadline).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen pt-32 pb-12 px-4 md:px-8 xl:max-w-6xl mx-auto">

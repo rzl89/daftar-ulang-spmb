@@ -1,8 +1,11 @@
 import { AlertTriangle, Clock } from "lucide-react";
 import { useCountdown } from "@/hooks";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 export function AlertBanner() {
-  const { days, hours, minutes, seconds, isExpired, isUrgent } = useCountdown();
+  const registrationDeadline = useSettingsStore(s => s.getSetting('registration_deadline'));
+  const deadlineDate = registrationDeadline ? new Date(registrationDeadline) : undefined;
+  const { days, hours, minutes, seconds, isExpired, isUrgent } = useCountdown(deadlineDate);
 
   if (isExpired) return null;
 

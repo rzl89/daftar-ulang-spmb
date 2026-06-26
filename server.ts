@@ -239,6 +239,24 @@ app.post('/api/registrations', async (req, res) => {
     });
     if (existing) return res.status(400).json({ message: 'NISN sudah terdaftar sebelumnya' });
 
+    // Check registration deadline
+    const deadlineSetting = await db.query.settings.findFirst({
+      where: eq(schema.settings.key, 'registration_deadline'),
+    });
+    if (deadlineSetting?.value) {
+      if (new Date() > new Date(deadlineSetting.value)) {
+        return res.status(403).json({ message: 'Batas waktu daftar ulang telah berakhir.' });
+      }
+    }
+
+    // Check if registration is open
+    const isOpen = await db.query.settings.findFirst({
+      where: eq(schema.settings.key, 'is_registration_open'),
+    });
+    if (isOpen?.value === 'false') {
+      return res.status(403).json({ message: 'Pendaftaran sedang ditutup oleh admin.' });
+    }
+
     const suffix = crypto.randomBytes(6).toString('hex').toUpperCase();
     const registrationId = `SPMB-${new Date().getFullYear()}-${suffix}`;
 
@@ -479,8 +497,7 @@ app.post('/api/admin/seed', async (_req, res) => {
       { key: 'school_year', value: 'YYYY/YYYY', label: 'Tahun Ajaran', category: 'general' },
       { key: 'school_address', value: 'Alamat Sekolah', label: 'Alamat Sekolah', category: 'general' },
       { key: 'school_phone', value: '(021) 12345678', label: 'No. Telepon', category: 'contact' },
-      { key: 'school_email', value: 'email@sekolah.sch.id', label: 'Email Sekolah', category: 'contact' },
-      { key: 'registration_deadline_days', value: '7', label: 'Durasi Pendaftaran (hari)', category: 'registration' }
+      { key: 'school_email', value: 'email@sekolah.sch.id', label: 'Email Sekolah', category: 'contact' }
     ];
 
     const salt = await bcrypt.genSalt(10);
