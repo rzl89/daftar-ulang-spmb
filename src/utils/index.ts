@@ -30,12 +30,23 @@ export function getTimeRemaining(deadline: Date): {
   total: number;
 } {
   const total = deadline.getTime() - Date.now();
-  const seconds = Math.floor((total / 1000) % 60);
-  const minutes = Math.floor((total / 1000 / 60) % 60);
-  const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
-  const days = Math.floor(total / (1000 * 60 * 60 * 24));
+  // Clamp negative values to 0 so countdown doesn't show negative numbers after deadline passes
+  const safe = Math.max(0, total);
+  const seconds = Math.floor((safe / 1000) % 60);
+  const minutes = Math.floor((safe / 1000 / 60) % 60);
+  const hours = Math.floor((safe / (1000 * 60 * 60)) % 24);
+  const days = Math.floor(safe / (1000 * 60 * 60 * 24));
 
   return { total, days, hours, minutes, seconds };
+}
+
+/** Convert a UTC ISO string to local datetime-local input value (YYYY-MM-DDTHH:mm) */
+export function toDatetimeLocalValue(isoUtc: string): string {
+  if (!isoUtc) return '';
+  const d = new Date(isoUtc);
+  if (isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 export function generateRegistrationId(): string {

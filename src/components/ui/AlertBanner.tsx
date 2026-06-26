@@ -4,10 +4,12 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 
 export function AlertBanner() {
   const registrationDeadline = useSettingsStore(s => s.getSetting('registration_deadline'));
+  const isRegistrationOpen = useSettingsStore(s => s.getSetting('is_registration_open'));
   const deadlineDate = registrationDeadline ? new Date(registrationDeadline) : undefined;
   const { days, hours, minutes, seconds, isExpired, isUrgent } = useCountdown(deadlineDate);
 
-  if (isExpired) return null;
+  // Don't show banner if: no deadline set, deadline expired, or registration manually closed
+  if (!registrationDeadline || isExpired || isRegistrationOpen === 'false') return null;
 
   const pad = (n: number) => n.toString().padStart(2, "0");
 

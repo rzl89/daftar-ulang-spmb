@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '@/utils/api';
+import { toDatetimeLocalValue } from '@/utils';
 import { motion } from '@/utils/motion-lite';
 import { Settings, Save, LayoutTemplate, Upload } from 'lucide-react';
 import { toast } from 'sonner';
@@ -122,7 +123,7 @@ export default function Pengaturan() {
     try {
       // Save each setting sequentially (skip empty optional fields)
       for (const [key, value] of Object.entries(settings)) {
-        if (value === '' && (key === 'registration_deadline' || key === 'school_logo')) continue;
+        if (value === '' && key === 'school_logo') continue;
         await apiFetch(`/api/admin/settings/${key}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -238,7 +239,7 @@ export default function Pengaturan() {
                         <input 
                           type="datetime-local" 
                           name="registration_deadline"
-                          value={settings.registration_deadline ? new Date(settings.registration_deadline).toISOString().slice(0, 16) : ''} 
+                          value={toDatetimeLocalValue(settings.registration_deadline)}
                           onChange={(e) => {
                             const dateVal = e.target.value ? new Date(e.target.value).toISOString() : '';
                             setSettings(prev => ({ ...prev, registration_deadline: dateVal }));

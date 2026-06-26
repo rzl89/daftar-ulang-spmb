@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { 
-  CheckCircle2, 
-  FileText, 
-  Printer, 
+import {
+  CheckCircle2,
+  FileText,
+  Printer,
   ArrowRight,
   Clock,
   MapPin,
@@ -13,9 +12,9 @@ import {
 } from "lucide-react";
 import { Button, Card, CardContent, FlipClock } from "@/components/ui";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useCountdown } from "@/hooks";
 
 export default function Beranda() {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const getSetting = useSettingsStore(s => s.getSetting);
   const schoolName = getSetting('school_name');
   const schoolFullName = getSetting('school_full_name');
@@ -24,31 +23,8 @@ export default function Beranda() {
   const schoolPhone = getSetting('school_phone');
   const schoolEmail = getSetting('school_email');
   const registrationDeadline = getSetting('registration_deadline');
-
-  useEffect(() => {
-    // Set deadline based on settings or fallback
-    let deadline: Date;
-    if (registrationDeadline) {
-      deadline = new Date(registrationDeadline);
-    } else {
-      deadline = new Date();
-      deadline.setDate(deadline.getDate() + 7);
-    }
-
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = deadline.getTime() - now;
-
-      setTimeLeft({
-        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((distance % (1000 * 60)) / 1000)
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [registrationDeadline]);
+  const deadlineDate = registrationDeadline ? new Date(registrationDeadline) : undefined;
+  const { days, hours, minutes, seconds } = useCountdown(deadlineDate);
 
   const steps = [
     {
@@ -91,11 +67,14 @@ export default function Beranda() {
         </p>
 
         {/* Countdown Timer */}
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-12">
-          {Object.entries(timeLeft).map(([unit, value]) => (
-            <FlipClock key={unit} value={value as number} label={unit} />
-          ))}
-        </div>
+        {registrationDeadline && (
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-12">
+            <FlipClock value={days} label="Hari" />
+            <FlipClock value={hours} label="Jam" />
+            <FlipClock value={minutes} label="Mnt" />
+            <FlipClock value={seconds} label="Dtk" />
+          </div>
+        )}
 
         <Link to="/daftar-ulang">
           <Button size="xl" variant="accent" className="rounded-full shadow-accent/50 hover:shadow-accent/80 text-lg px-8 group">

@@ -37,7 +37,7 @@ const DEFAULTS: Omit<SettingsState, 'isLoaded' | 'fetchSettings' | 'getSetting'>
   school_tagline: 'Tagline Sekolah',
   is_registration_open: 'true',
   quota: '100',
-  registration_deadline: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+  registration_deadline: '',
   school_logo: '',
   theme_color_primary: '#1A237E',
   theme_color_secondary: '#F9A825',
