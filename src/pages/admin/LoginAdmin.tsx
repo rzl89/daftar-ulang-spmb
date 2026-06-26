@@ -61,7 +61,7 @@ export default function LoginAdmin() {
         className="w-full max-w-md z-10"
       >
         <div className="glass shadow-2xl border border-white/10 rounded-3xl overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent via-accent-light to-accent" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-accent via-accent-light to-accent" />
           <div className="p-8 sm:p-10">
             <div className="flex flex-col items-center justify-center mb-8">
               <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20 mb-6">
