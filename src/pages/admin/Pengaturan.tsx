@@ -310,18 +310,10 @@ export default function Pengaturan() {
                   <div className="space-y-6">
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Logo Sekolah</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          name="school_logo"
-                          value={settings.school_logo}
-                          onChange={handleChange}
-                          placeholder="URL atau path logo..."
-                          className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all dark:text-white"
-                        />
+                      <div className="flex items-center gap-3">
                         <label className={`flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium text-sm cursor-pointer transition-colors shrink-0 ${isUploadingLogo ? 'opacity-50 pointer-events-none' : ''}`}>
                           <Upload className="w-4 h-4" />
-                          {isUploadingLogo ? 'Mengupload...' : 'Upload'}
+                          {isUploadingLogo ? 'Mengupload...' : (settings.school_logo ? 'Ganti Logo' : 'Upload Logo')}
                           <input
                             type="file"
                             accept="image/jpeg,image/png,image/webp,image/svg+xml"
@@ -330,8 +322,17 @@ export default function Pengaturan() {
                             disabled={isUploadingLogo}
                           />
                         </label>
+                        {settings.school_logo && (
+                          <button
+                            type="button"
+                            onClick={() => setSettings(prev => ({ ...prev, school_logo: '' }))}
+                            className="px-3 py-2 text-xs bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                          >
+                            Hapus Logo
+                          </button>
+                        )}
                       </div>
-                      <p className="text-xs text-slate-500">Masukkan URL logo, atau upload file JPG/PNG/WebP/SVG dari perangkat Anda.</p>
+                      <p className="text-xs text-slate-500">Upload file JPG, PNG, WebP, atau SVG. Logo akan ditampilkan di navbar dan sidebar admin.</p>
                       {settings.school_logo && (
                         <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center">
                           <img src={settings.school_logo} alt="Preview Logo" className="h-24 max-w-full object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
