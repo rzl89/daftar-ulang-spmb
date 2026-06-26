@@ -26,55 +26,70 @@ Mengucapkan selamat tinggal pada formulir kertas dan proses manual yang memakan 
 
 ## ✨ Features Showcase
 
-
-
-### 1. 🔍 Real-time Verification & Status Check
-Siswa dapat mengecek status kelulusan mereka secara instan menggunakan Nomor Peserta atau NISN. Sistem akan memberikan informasi *real-time* mengenai hasil seleksi.
+### 1. 🏠 Modern Landing Page
+Halaman beranda informatif dengan countdown batas waktu, alur pendaftaran, dan pusat informasi.
 <p align="center">
-  <p align="center">
-  <i>📸 Screenshots available upon request.</i>
+  <img src="docs/screenshots/01-beranda.png" alt="Beranda" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
 </p>
 
-### 2. 📝 Dynamic Form Builder
-Fitur unggulan di mana Admin dapat **membuat, mengedit, dan menyusun ulang (Drag & Drop)** pertanyaan formulir pendaftaran. Mendukung berbagai tipe input (Teks, Pilihan Ganda, Tanggal, hingga Upload Dokumen).
+### 2. 🔍 Real-time Verification & Status Check
+Siswa mengecek status kelulusan secara instan menggunakan NISN dan tanggal lahir.
 <p align="center">
-  <p align="center">
-  <i>📸 Screenshots available upon request.</i>
+  <img src="docs/screenshots/02-verifikasi-kelulusan.png" alt="Verifikasi Kelulusan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
 </p>
 
-### 3. ☁️ Seamless Cloud Document Upload
-Terintegrasi langsung dengan **Cloudinary**. Peserta dapat mengunggah berkas persyaratan (seperti Kartu Keluarga, Ijazah, dll) dengan cepat dan aman tanpa membebani server lokal.
+### 3. 📊 Interactive Admin Dashboard
+Pusat komando dengan statistik pendaftar, grafik, dan log aktivitas terkini.
 <p align="center">
-  <p align="center">
-  <i>📸 Screenshots available upon request.</i>
+  <img src="docs/screenshots/03-admin-dashboard.png" alt="Admin Dashboard" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
 </p>
 
-### 4. 📄 Automatic PDF & QR Code Generation
-Setelah berhasil mendaftar ulang, sistem secara otomatis menghasilkan **Bukti Daftar Ulang dalam format PDF** yang dilengkapi dengan **QR Code** unik untuk kemudahan verifikasi fisik oleh panitia.
+### 4. 📋 Data Peserta Management
+Kelola seluruh data pendaftar — filter, cari, dan pantau status setiap peserta.
 <p align="center">
-  <p align="center">
-  <i>📸 Screenshots available upon request.</i>
+  <img src="docs/screenshots/04-admin-data-peserta.png" alt="Data Peserta" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
 </p>
 
-### 5. 📊 Interactive Admin Dashboard & Analytics
-Pusat komando bagi panitia. Memantau statistik pendaftar harian, kuota jurusan, dan status verifikasi melalui grafik interaktif yang memanjakan mata.
+### 5. 📈 Excel Import & Export
+Upload data kelulusan via Excel dan ekspor laporan dalam format .xlsx.
 <p align="center">
-  <p align="center">
-  <i>📸 Screenshots available upon request.</i>
+  <img src="docs/screenshots/05-admin-data-kelulusan.png" alt="Data Kelulusan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
 </p>
 
-### 6. ✅ One-Click Verification System
-Panitia dapat memverifikasi berkas yang diunggah peserta dalam satu klik. Peserta akan langsung melihat perubahan status (*Diterima/Ditolak/Menunggu*) di portal mereka.
+### 6. ✅ One-Click Document Verification
+Verifikasi berkas peserta dalam satu klik. Status otomatis berubah (*Diterima/Ditolak*).
 <p align="center">
-  <p align="center">
-  <i>📸 Screenshots available upon request.</i>
+  <img src="docs/screenshots/06-admin-verifikasi-berkas.png" alt="Verifikasi Berkas" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
 </p>
 
-### 7. 📈 Excel Reporting & Export
-Butuh data untuk rekapitulasi luring? Ekspor semua data pendaftar dan status verifikasi ke dalam format Excel (.xlsx) hanya dengan satu tombol.
+### 7. 🎓 Jurusan Management
+Kelola jurusan, kuota, dan urutan tampilan untuk formulir pendaftaran.
 <p align="center">
-  <p align="center">
-  <i>📸 Screenshots available upon request.</i>
+  <img src="docs/screenshots/07-admin-kelola-jurusan.png" alt="Kelola Jurusan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+</p>
+
+### 8. 📝 Dynamic Form Builder
+Buat, edit, dan susun ulang (Drag & Drop) pertanyaan formulir pendaftaran. Dukungan berbagai tipe input.
+<p align="center">
+  <img src="docs/screenshots/08-admin-kelola-pertanyaan.png" alt="Kelola Pertanyaan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+</p>
+
+### 9. 📄 Laporan & Reporting
+Rekapitulasi data pendaftar dan status verifikasi siap ekspor.
+<p align="center">
+  <img src="docs/screenshots/09-admin-laporan.png" alt="Laporan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+</p>
+
+### 10. 📜 Activity Log
+Pantau semua aktivitas admin secara real-time untuk audit dan keamanan.
+<p align="center">
+  <img src="docs/screenshots/10-admin-log-aktivitas.png" alt="Log Aktivitas" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+</p>
+
+### 11. ⚙️ System Settings
+Konfigurasi penuh aplikasi — nama sekolah, logo, warna tema, batas waktu, dan lainnya.
+<p align="center">
+  <img src="docs/screenshots/11-admin-pengaturan.png" alt="Pengaturan" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
 </p>
 
 ---
@@ -144,19 +159,6 @@ Ingin mencoba atau mengembangkan platform ini secara lokal? Ikuti langkah-langka
 6. **Akses Aplikasi**
    - Publik: `http://localhost:5173`
    - Admin: `http://localhost:5173/admin` (Kredensial bawaan tergantung konfigurasi DB Anda)
-
----
-
-## 💰 Pricing & License
-
-This project is sold under a **Single Use License Agreement**. One purchase = one school/domain installation.
-
-See `LICENSE` for full terms. Key points:
-- ✅ Use on a single school domain
-- ✅ Modify and customize freely
-- ✅ Full source code included
-- ❌ No redistribution or resale
-- ❌ No SaaS/multi-tenant use
 
 ---
 
