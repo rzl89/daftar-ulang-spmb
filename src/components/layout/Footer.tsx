@@ -177,7 +177,10 @@ export function Footer() {
             © {currentYear} {fullName}. Hak Cipta Dilindungi.
           </p>
           <p className="text-white/30 text-xs flex items-center gap-1">
-            Powered by SPMB Registration System
+            © {currentYear} Developed by{' '}
+            <a href="https://www.tiktok.com/@rizaa119" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline font-medium">
+              @rizaa119
+            </a>
           </p>
         </div>
       </div>
