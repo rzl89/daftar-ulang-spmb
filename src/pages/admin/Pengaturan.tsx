@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '@/utils/api';
 import { motion } from '@/utils/motion-lite';
-import { Settings, Save, LayoutTemplate } from 'lucide-react';
+import { Settings, Save, LayoutTemplate, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Pengaturan() {
@@ -24,6 +24,7 @@ export default function Pengaturan() {
   const [activeTab, setActiveTab] = useState('umum');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -46,6 +47,55 @@ export default function Pengaturan() {
       toast.error('Gagal memuat pengaturan');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Format tidak didukung. Gunakan JPG, PNG, WebP, atau SVG.');
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    try {
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      const apiKey = import.meta.env.VITE_CLOUDINARY_API_KEY;
+
+      if (!cloudName || !apiKey) {
+        toast.error('Cloudinary belum dikonfigurasi. Gunakan URL/Path sebagai alternatif.');
+        return;
+      }
+
+      const signRes = await fetch('/api/cloudinary/sign');
+      if (!signRes.ok) throw new Error('Gagal mengambil signature');
+      const { timestamp, signature } = await signRes.json();
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('api_key', apiKey);
+      formData.append('timestamp', timestamp.toString());
+      formData.append('signature', signature);
+      formData.append('folder', 'logo');
+
+      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error('Upload gagal');
+      const result = await uploadRes.json();
+
+      setSettings(prev => ({ ...prev, school_logo: result.secure_url }));
+      toast.success('Logo berhasil diupload!');
+    } catch (err) {
+      toast.error('Gagal mengupload logo. Coba lagi.');
+    } finally {
+      setIsUploadingLogo(false);
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -242,16 +292,29 @@ export default function Pengaturan() {
                 {activeTab === 'tema' && (
                   <div className="space-y-6">
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Logo URL / Path</label>
-                      <input 
-                        type="text" 
-                        name="school_logo"
-                        value={settings.school_logo} 
-                        onChange={handleChange}
-                        placeholder="/Logo Sekolah.png"
-                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all dark:text-white" 
-                      />
-                      <p className="text-xs text-slate-500">Gunakan path relatif dari folder public (misal: `/Logo Sekolah.png`) atau URL gambar eksternal.</p>
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Logo Sekolah</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          name="school_logo"
+                          value={settings.school_logo}
+                          onChange={handleChange}
+                          placeholder="URL atau path logo..."
+                          className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all dark:text-white"
+                        />
+                        <label className={`flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium text-sm cursor-pointer transition-colors shrink-0 ${isUploadingLogo ? 'opacity-50 pointer-events-none' : ''}`}>
+                          <Upload className="w-4 h-4" />
+                          {isUploadingLogo ? 'Mengupload...' : 'Upload'}
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                            onChange={handleLogoUpload}
+                            className="hidden"
+                            disabled={isUploadingLogo}
+                          />
+                        </label>
+                      </div>
+                      <p className="text-xs text-slate-500">Masukkan URL/Path logo, atau upload file JPG/PNG/WebP/SVG langsung ke Cloudinary.</p>
                       {settings.school_logo && (
                         <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center">
                           <img src={settings.school_logo} alt="Preview Logo" className="h-16 object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
