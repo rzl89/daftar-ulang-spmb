@@ -1,5 +1,15 @@
 import { create } from 'zustand';
 
+/** Hitung tahun ajaran saat ini secara otomatis (kalender Indonesia: Juli–Juni) */
+function computeAcademicYear(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1-based
+  return month >= 7 ? `${year}/${year + 1}` : `${year - 1}/${year}`;
+}
+
+const PLACEHOLDER_SCHOOL_YEAR = 'YYYY/YYYY';
+
 interface SettingsState {
   // School biodata
   school_name: string;
@@ -68,6 +78,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   getSetting: (key: string) => {
     const state = get() as any;
-    return state[key] || DEFAULTS[key] || '';
+    const raw = state[key] || DEFAULTS[key] || '';
+    // Auto-compute academic year when the value is still the placeholder
+    if (key === 'school_year' && raw === PLACEHOLDER_SCHOOL_YEAR) {
+      return computeAcademicYear();
+    }
+    return raw;
   },
 }));
