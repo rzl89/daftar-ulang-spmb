@@ -6,18 +6,16 @@ import {
   Mail,
   Globe,
   Clock,
-  Camera,
-  ThumbsUp,
-  Play,
   ArrowUpRight,
 } from "lucide-react";
 import { NAV_LINKS } from "@/constants/school";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { SOCIAL_ICON_MAP, ExternalLink } from "@/constants/icons";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const getSetting = useSettingsStore(s => s.getSetting);
-  
+
   const name = getSetting('school_name');
   const fullName = getSetting('school_full_name');
   const year = getSetting('school_year');
@@ -26,6 +24,15 @@ export function Footer() {
   const phone = getSetting('school_phone');
   const email = getSetting('school_email');
   const website = getSetting('school_website');
+
+  const [socialLinks, setSocialLinks] = React.useState<Array<{ id: number; name: string; url: string; icon: string }>>([]);
+
+  React.useEffect(() => {
+    fetch('/api/social-media')
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setSocialLinks(data); })
+      .catch(() => {});
+  }, []);
 
   return (
     <footer className="relative overflow-hidden gradient-mesh-navy text-white border-t border-white/10">
@@ -140,33 +147,25 @@ export function Footer() {
               Sosial Media
             </h4>
             <div className="flex items-center gap-3">
-              <a
-                href="https://instagram.com/sekolah"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg bg-white/10 hover:bg-accent/20 flex items-center justify-center transition-colors group"
-                aria-label="Instagram"
-              >
-                <Camera className="h-4 w-4 text-white/60 group-hover:text-accent transition-colors" />
-              </a>
-              <a
-                href="https://facebook.com/sekolah"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg bg-white/10 hover:bg-accent/20 flex items-center justify-center transition-colors group"
-                aria-label="Facebook"
-              >
-                <ThumbsUp className="h-4 w-4 text-white/60 group-hover:text-accent transition-colors" />
-              </a>
-              <a
-                href="https://youtube.com/@sekolah"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg bg-white/10 hover:bg-accent/20 flex items-center justify-center transition-colors group"
-                aria-label="YouTube"
-              >
-                <Play className="h-4 w-4 text-white/60 group-hover:text-accent transition-colors" />
-              </a>
+              {socialLinks.length > 0 ? (
+                socialLinks.map((link) => {
+                  const Icon = SOCIAL_ICON_MAP[link.icon] || ExternalLink;
+                  return (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-white/10 hover:bg-accent/20 flex items-center justify-center transition-colors group"
+                      aria-label={link.name}
+                    >
+                      <Icon className="h-4 w-4 text-white/60 group-hover:text-accent transition-colors" />
+                    </a>
+                  );
+                })
+              ) : (
+                <p className="text-white/40 text-xs">Segera hadir</p>
+              )}
             </div>
           </div>
         </div>

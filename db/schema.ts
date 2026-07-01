@@ -139,3 +139,15 @@ export const formQuestions = pgTable('form_questions', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+// ===================== SOCIAL MEDIA TABLE =====================
+export const socialMedia = pgTable('social_media', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 100 }).notNull(),
+  url: varchar('url', { length: 500 }).notNull(),
+  icon: varchar('icon', { length: 50 }).notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});

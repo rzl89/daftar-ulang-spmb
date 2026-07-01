@@ -4,6 +4,7 @@ import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './db/schema.js';
 import { eq, desc, asc, count, sql, like } from 'drizzle-orm';
+import { cache } from './memoryCache.js';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
@@ -162,11 +163,37 @@ app.get('/api/health', (_req, res) => {
 // ================================================================
 app.get('/api/settings', async (_req, res) => {
   try {
+    const CACHE_KEY = 'settings:public';
+    const cached = cache.get(CACHE_KEY);
+    if (cached) return res.json(cached);
+
     const rows = await db.query.settings.findMany();
     const sensitiveKeys = ['admin_password'];
     const publicSettings = rows.filter(r => !sensitiveKeys.includes(r.key as string));
+    cache.set(CACHE_KEY, publicSettings, 5 * 60 * 1000); // 5 min TTL
     res.json(publicSettings);
   } catch (e: any) {
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
+// ================================================================
+//  SOCIAL MEDIA — PUBLIC
+// ================================================================
+app.get('/api/social-media', async (_req, res) => {
+  try {
+    const CACHE_KEY = 'social-media:public';
+    const cached = cache.get(CACHE_KEY);
+    if (cached) return res.json(cached);
+
+    const rows = await db.query.socialMedia.findMany({
+      where: eq(schema.socialMedia.isActive, true),
+      orderBy: asc(schema.socialMedia.sortOrder),
+    });
+    cache.set(CACHE_KEY, rows, 5 * 60 * 1000); // 5 min TTL
+    res.json(rows);
+  } catch (e: any) {
+    console.error('GET /api/social-media', e);
     res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
@@ -308,9 +335,14 @@ app.get('/api/jurusan', async (_req, res) => {
 // GET — All jurusan (admin)
 app.get('/api/admin/jurusan', async (_req, res) => {
   try {
+    const CACHE_KEY = 'jurusan:admin';
+    const cached = cache.get(CACHE_KEY);
+    if (cached) return res.json(cached);
+
     const rows = await db.query.jurusan.findMany({
       orderBy: [asc(schema.jurusan.sortOrder)],
     });
+    cache.set(CACHE_KEY, rows, 2 * 60 * 1000); // 2 min TTL
     res.json(rows);
   } catch (e: any) {
     res.status(500).json({ message: 'Terjadi kesalahan server' });
@@ -329,6 +361,7 @@ app.post('/api/admin/jurusan', async (req, res) => {
       quota: quota || 36,
       sortOrder: sortOrder || 0,
     }).returning();
+    cache.invalidate('jurusan:admin');
     res.status(201).json(row);
   } catch (e: any) {
     console.error('POST /api/admin/jurusan', e.message);
@@ -353,6 +386,7 @@ app.put('/api/admin/jurusan/:id', async (req, res) => {
       .where(eq(schema.jurusan.id, Number(req.params.id)))
       .returning();
     if (!row) return res.status(404).json({ message: 'Jurusan tidak ditemukan' });
+    cache.invalidate('jurusan:admin');
     res.json(row);
   } catch (e: any) {
     console.error('PUT /api/admin/jurusan/:id', e.message);
@@ -367,6 +401,7 @@ app.delete('/api/admin/jurusan/:id', async (req, res) => {
       .where(eq(schema.jurusan.id, Number(req.params.id)))
       .returning();
     if (!row) return res.status(404).json({ message: 'Jurusan tidak ditemukan' });
+    cache.invalidate('jurusan:admin');
     res.json({ message: 'Jurusan berhasil dihapus' });
   } catch (e: any) {
     res.status(500).json({ message: 'Terjadi kesalahan server' });
@@ -458,6 +493,7 @@ app.put('/api/admin/settings/:key', async (req, res) => {
         .set({ value: finalValue, updatedAt: new Date(), ...(label && { label }), ...(category && { category }) })
         .where(eq(schema.settings.key, req.params.key))
         .returning();
+      cache.invalidate('settings:public');
       res.json(row);
     } else {
       const [row] = await db.insert(schema.settings).values({
@@ -466,10 +502,88 @@ app.put('/api/admin/settings/:key', async (req, res) => {
         label: label || req.params.key,
         category: category || 'general',
       }).returning();
+      cache.invalidate('settings:public');
       res.status(201).json(row);
     }
   } catch (e: any) {
     console.error(e); res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
+// ================================================================
+//  SOCIAL MEDIA — ADMIN CRUD
+// ================================================================
+
+// GET — All social media (active + inactive)
+app.get('/api/admin/social-media', async (_req, res) => {
+  try {
+    const rows = await db.query.socialMedia.findMany({
+      orderBy: asc(schema.socialMedia.sortOrder),
+    });
+    res.json(rows);
+  } catch (e: any) {
+    console.error('GET /api/admin/social-media', e);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
+// POST — Create new social media
+app.post('/api/admin/social-media', async (req, res) => {
+  try {
+    const { name, url, icon, sortOrder, isActive } = req.body;
+    if (!name || !url || !icon) {
+      return res.status(400).json({ message: 'Nama, URL, dan Ikon wajib diisi' });
+    }
+    const [row] = await db.insert(schema.socialMedia).values({
+      name,
+      url,
+      icon,
+      sortOrder: sortOrder || 0,
+      isActive: isActive !== undefined ? isActive : true,
+    }).returning();
+    cache.invalidate('social-media:public');
+    res.status(201).json(row);
+  } catch (e: any) {
+    console.error('POST /api/admin/social-media', e);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
+// PUT — Update social media
+app.put('/api/admin/social-media/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { name, url, icon, sortOrder, isActive } = req.body;
+    const [row] = await db.update(schema.socialMedia)
+      .set({
+        ...(name !== undefined && { name }),
+        ...(url !== undefined && { url }),
+        ...(icon !== undefined && { icon }),
+        ...(sortOrder !== undefined && { sortOrder }),
+        ...(isActive !== undefined && { isActive }),
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.socialMedia.id, id))
+      .returning();
+    if (!row) return res.status(404).json({ message: 'Data tidak ditemukan' });
+    cache.invalidate('social-media:public');
+    res.json(row);
+  } catch (e: any) {
+    console.error('PUT /api/admin/social-media/:id', e);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
+// DELETE — Remove social media
+app.delete('/api/admin/social-media/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await db.delete(schema.socialMedia).where(eq(schema.socialMedia.id, id));
+    cache.invalidate('social-media:public');
+    res.json({ message: 'Social media berhasil dihapus' });
+  } catch (e: any) {
+    console.error('DELETE /api/admin/social-media/:id', e);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 

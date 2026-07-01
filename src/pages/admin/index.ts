@@ -9,3 +9,4 @@ export { default as LogAktivitas } from './LogAktivitas';
 export { default as Pengaturan } from './Pengaturan';
 export { default as KelolaJurusan } from './KelolaJurusan';
 export { default as KelolaPertanyaan } from './KelolaPertanyaan';
+export { default as KelolaSocialMedia } from './KelolaSocialMedia';

@@ -19,7 +19,8 @@ import {
   ChevronLeft,
   FileSpreadsheet,
   BookOpen,
-  HelpCircle
+  HelpCircle,
+  Share2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -33,6 +34,7 @@ const menuItems = [
   { path: '/admin/pertanyaan', label: 'Kelola Pertanyaan', icon: HelpCircle },
   { path: '/admin/laporan', label: 'Laporan', icon: BarChart3 },
   { path: '/admin/aktivitas', label: 'Log Aktivitas', icon: History },
+  { path: '/admin/social-media', label: 'Social Media', icon: Share2 },
   { path: '/admin/pengaturan', label: 'Pengaturan', icon: Settings },
 ];
 
