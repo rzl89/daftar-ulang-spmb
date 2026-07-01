@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import {
   GraduationCap,
@@ -25,9 +26,9 @@ export function Footer() {
   const email = getSetting('school_email');
   const website = getSetting('school_website');
 
-  const [socialLinks, setSocialLinks] = React.useState<Array<{ id: number; name: string; url: string; icon: string }>>([]);
+  const [socialLinks, setSocialLinks] = useState<Array<{ id: number; name: string; url: string; icon: string }>>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch('/api/social-media')
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setSocialLinks(data); })
