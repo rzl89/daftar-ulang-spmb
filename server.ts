@@ -748,14 +748,56 @@ app.delete('/api/admin/passed-students', async (_req, res) => {
   }
 });
 
-// Helper: convert Excel serial date to YYYY-MM-DD
-function excelSerialToDate(serial: number): string {
-  const utcDays = Math.floor(serial - 25569);
-  const d = new Date(utcDays * 86400 * 1000);
-  const yyyy = d.getUTCFullYear();
-  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(d.getUTCDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+// Helper: normalize any date string to YYYY-MM-DD
+function normalizeDateStr(raw: string): string {
+  if (!raw) return '';
+  const trimmed = raw.trim();
+
+  // Handle Excel serial date number (e.g. 39814)
+  if (/^\d{4,5}$/.test(trimmed)) {
+    const serial = Number(trimmed);
+    const utcDays = Math.floor(serial - 25569);
+    const d = new Date(utcDays * 86400 * 1000);
+    const yyyy = d.getUTCFullYear();
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // Already YYYY-MM-DD (possibly with time suffix)
+  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
+    return trimmed.substring(0, 10);
+  }
+
+  // Handle dd/mm/yyyy or dd-mm-yyyy
+  const match = trimmed.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})$/);
+  if (match) {
+    const part1 = parseInt(match[1], 10);
+    const part2 = parseInt(match[2], 10);
+    const year = match[3];
+
+    let day: number, month: number;
+    if (part1 > 12) {
+      day = part1; month = part2;
+    } else if (part2 > 12) {
+      day = part2; month = part1;
+    } else {
+      // Ambiguous — assume dd/mm/yyyy (Indonesian convention)
+      day = part1; month = part2;
+    }
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
+  // Fallback: try parsing as JS Date
+  const parsed = new Date(trimmed);
+  if (!isNaN(parsed.getTime())) {
+    const yyyy = parsed.getFullYear();
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  return trimmed;
 }
 
 // POST — Verifikasi kelulusan (Public)
@@ -775,14 +817,11 @@ app.post('/api/verifikasi', async (req, res) => {
       return res.status(404).json({ message: 'Data tidak ditemukan atau Anda tidak terdaftar sebagai peserta yang lulus.' });
     }
 
-    // Compare tanggal lahir — handle Excel serial date format
-    let storedDate = student.tanggalLahir || '';
-    if (/^\d{4,5}$/.test(storedDate)) {
-      // It's an Excel serial number, convert it
-      storedDate = excelSerialToDate(Number(storedDate));
-    }
+    // Normalize both dates to YYYY-MM-DD before comparison
+    const storedDateNorm = normalizeDateStr(student.tanggalLahir || '');
+    const inputDateNorm = normalizeDateStr(tanggalLahir);
 
-    if (storedDate !== tanggalLahir) {
+    if (!storedDateNorm || storedDateNorm !== inputDateNorm) {
       return res.status(404).json({ message: 'Tanggal lahir tidak sesuai dengan data kelulusan.' });
     }
 

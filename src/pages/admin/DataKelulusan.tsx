@@ -18,15 +18,86 @@ interface PassedStudent {
 
 import ExcelJS from 'exceljs';
 
-const EXCEL_HEADERS = ['NISN', 'Nama Lengkap', 'Tanggal Lahir', 'Asal Sekolah', 'Jurusan Diterima'];
+const EXCEL_HEADERS = ['NISN', 'Nama Lengkap', 'Tanggal Lahir (dd/mm/yyyy)', 'Asal Sekolah', 'Jurusan Diterima'];
 
 function generateTemplateData() {
   return [
     EXCEL_HEADERS,
-    ['0012345678', 'Contoh Nama Siswa 1', '2009-01-15', 'SMP N 1 Contoh', 'JURUSAN1'],
-    ['0012345679', 'Contoh Nama Siswa 2', '2009-02-20', 'SMP N 2 Contoh', 'JURUSAN2'],
-    ['0012345680', 'Contoh Nama Siswa 3', '2009-03-10', 'MTs N 1 Contoh', 'JURUSAN1'],
+    ['0012345678', 'Contoh Nama Siswa 1', '15/01/2009', 'SMP N 1 Contoh', 'JURUSAN1'],
+    ['0012345679', 'Contoh Nama Siswa 2', '20/02/2009', 'SMP N 2 Contoh', 'JURUSAN2'],
+    ['0012345680', 'Contoh Nama Siswa 3', '10/03/2009', 'MTs N 1 Contoh', 'JURUSAN1'],
   ];
+}
+
+/**
+ * Normalize any date value from Excel to YYYY-MM-DD format.
+ * Handles: Date objects, dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd, Excel serial numbers.
+ */
+function normalizeDateToISO(cellValue: unknown): string {
+  if (!cellValue) return '';
+
+  // Handle ExcelJS Date objects
+  if (cellValue instanceof Date) {
+    const yyyy = cellValue.getFullYear();
+    const mm = String(cellValue.getMonth() + 1).padStart(2, '0');
+    const dd = String(cellValue.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const raw = String(cellValue).trim();
+  if (!raw) return '';
+
+  // Handle Excel serial date number (e.g. 39814)
+  if (/^\d{4,5}$/.test(raw)) {
+    const serial = Number(raw);
+    const utcDays = Math.floor(serial - 25569);
+    const d = new Date(utcDays * 86400 * 1000);
+    const yyyy = d.getUTCFullYear();
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // Already in YYYY-MM-DD format
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+    return raw.substring(0, 10);
+  }
+
+  // Handle dd/mm/yyyy or dd-mm-yyyy
+  const match = raw.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})$/);
+  if (match) {
+    const part1 = parseInt(match[1], 10);
+    const part2 = parseInt(match[2], 10);
+    const year = match[3];
+    
+    let day: number, month: number;
+    if (part1 > 12) {
+      // First part > 12, must be day (dd/mm/yyyy)
+      day = part1;
+      month = part2;
+    } else if (part2 > 12) {
+      // Second part > 12, must be day (mm/dd/yyyy)
+      day = part2;
+      month = part1;
+    } else {
+      // Ambiguous — assume dd/mm/yyyy (Indonesian convention)
+      day = part1;
+      month = part2;
+    }
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
+  // Fallback: try parsing as JS Date
+  const parsed = new Date(raw);
+  if (!isNaN(parsed.getTime())) {
+    const yyyy = parsed.getFullYear();
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // Return raw if nothing worked
+  return raw;
 }
 
 
@@ -118,7 +189,7 @@ export default function DataKelulusan() {
             parsed.push({
               nisn: String(nisn).trim(),
               namaLengkap: String(namaLengkap).trim(),
-              tanggalLahir: row.getCell(3).value ? String(row.getCell(3).value).trim() : '',
+              tanggalLahir: normalizeDateToISO(row.getCell(3).value),
               asalSekolah: row.getCell(4).value ? String(row.getCell(4).value).trim() : '',
               jurusanDiterima: row.getCell(5).value ? String(row.getCell(5).value).trim() : '',
             });

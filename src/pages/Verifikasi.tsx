@@ -75,7 +75,7 @@ export default function Verifikasi() {
               required
               value={tglLahir}
               onChange={(e) => setTglLahir(e.target.value)}
-              hint="Format: Bulan, Hari, Tahun (sesuaikan pengaturan browser/perangkat)."
+              hint="Pilih tanggal lahir Anda sesuai data yang terdaftar."
             />
 
             <Button 
