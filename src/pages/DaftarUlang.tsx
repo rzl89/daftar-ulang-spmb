@@ -104,8 +104,11 @@ export default function DaftarUlang() {
           
           if (!res.ok) {
             toast.error(result.message || "Verifikasi gagal. Periksa kembali NISN dan Tanggal Lahir Anda.");
-            setError("dataPribadi.nisn", { type: "manual", message: "Data tidak ditemukan atau NISN salah" });
-            setError("dataPribadi.tanggalLahir", { type: "manual", message: "Tanggal lahir tidak cocok" });
+            if (result.message?.includes("Tanggal lahir")) {
+              setError("dataPribadi.tanggalLahir", { type: "server", message: "Tanggal lahir tidak sesuai dengan data kelulusan" });
+            } else {
+              setError("dataPribadi.nisn", { type: "server", message: "Data NISN tidak ditemukan atau Anda tidak terdaftar" });
+            }
             return;
           }
         } catch (error) {
@@ -483,7 +486,7 @@ export default function DaftarUlang() {
                                 />
                                 <Button 
                                   type="button" 
-                                  variant={files[doc] ? "ghost" : (isMissing ? "destructive" : "outline")} 
+                                  variant={files[doc] ? "ghost" : (isMissing ? "danger" : "outline")} 
                                   size="sm" 
                                   leftIcon={<Upload className="w-4 h-4" />}
                                   onClick={() => document.getElementById(`file-upload-${doc}`)?.click()}
