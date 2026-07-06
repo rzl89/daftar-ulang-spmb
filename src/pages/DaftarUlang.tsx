@@ -52,6 +52,7 @@ export default function DaftarUlang() {
     "Kartu Keluarga (KK)": null,
     "Akta Kelahiran": null
   });
+  const [missingDocs, setMissingDocs] = useState<string[]>([]);
 
   const { register, handleSubmit, trigger, getValues, setError, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -102,7 +103,9 @@ export default function DaftarUlang() {
           setIsSubmitting(false);
           
           if (!res.ok) {
-            toast.error(result.message || "Data tidak ditemukan atau Anda tidak terdaftar sebagai peserta yang lulus.");
+            toast.error(result.message || "Verifikasi gagal. Periksa kembali NISN dan Tanggal Lahir Anda.");
+            setError("dataPribadi.nisn", { type: "manual", message: "Data tidak ditemukan atau NISN salah" });
+            setError("dataPribadi.tanggalLahir", { type: "manual", message: "Tanggal lahir tidak cocok" });
             return;
           }
         } catch (error) {
@@ -122,12 +125,17 @@ export default function DaftarUlang() {
 
   const onSubmitForm = async (data: FormData) => {
     // Validasi apakah file sudah dipilih semua
-    const unselectedFiles = Object.entries(files).filter(([_, file]) => file === null);
-    if (unselectedFiles.length > 0) {
-      toast.error(`Mohon unggah semua dokumen yang diwajibkan (${unselectedFiles[0][0]}).`);
+    const unselected = Object.entries(files)
+      .filter(([_, file]) => file === null)
+      .map(([name]) => name);
+      
+    if (unselected.length > 0) {
+      setMissingDocs(unselected);
+      toast.error(`Mohon unggah semua dokumen yang diwajibkan (${unselected[0]}).`);
       return;
     }
-
+    
+    setMissingDocs([]);
     setIsSubmitting(true);
     setUploadProgress(10);
     
@@ -444,39 +452,52 @@ export default function DaftarUlang() {
                     <p className="text-sm text-slate-500 mb-4">Pilih dokumen pendaftaran (PDF/JPG maksimal 2MB per file).</p>
                     
                     <div className="space-y-4 mb-8">
-                      {["Surat Keterangan Lulus (SKL)", "Kartu Keluarga (KK)", "Akta Kelahiran"].map((doc) => (
-                        <div key={doc} className="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white shadow-sm">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                              <FileText className={`w-5 h-5 ${files[doc] ? 'text-success' : ''}`} />
+                      {["Surat Keterangan Lulus (SKL)", "Kartu Keluarga (KK)", "Akta Kelahiran"].map((doc) => {
+                        const isMissing = missingDocs.includes(doc);
+                        return (
+                          <div key={doc}>
+                            <div className={`border rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white shadow-sm transition-colors ${isMissing ? 'border-destructive bg-destructive/5' : 'border-slate-200'}`}>
+                              <div className="flex items-center gap-4">
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isMissing ? 'bg-destructive/10 text-destructive' : 'bg-slate-50 text-slate-400'}`}>
+                                  <FileText className={`w-5 h-5 ${files[doc] ? 'text-success' : ''}`} />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 text-sm">{doc} <span className="text-destructive">*</span></h4>
+                                  {files[doc] && (
+                                    <p className="text-xs text-slate-500 mt-1">{files[doc]?.name}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="shrink-0 relative">
+                                <input 
+                                  type="file" 
+                                  id={`file-upload-${doc}`}
+                                  accept=".pdf,.jpg,.jpeg,.png"
+                                  onChange={(e) => {
+                                    handleFileChange(doc, e);
+                                    if (e.target.files && e.target.files[0]) {
+                                      setMissingDocs(prev => prev.filter(d => d !== doc));
+                                    }
+                                  }}
+                                  className="hidden"
+                                />
+                                <Button 
+                                  type="button" 
+                                  variant={files[doc] ? "ghost" : (isMissing ? "destructive" : "outline")} 
+                                  size="sm" 
+                                  leftIcon={<Upload className="w-4 h-4" />}
+                                  onClick={() => document.getElementById(`file-upload-${doc}`)?.click()}
+                                >
+                                  {files[doc] ? "Ubah File" : "Pilih File"}
+                                </Button>
+                              </div>
                             </div>
-                            <div>
-                              <h4 className="font-semibold text-slate-800 text-sm">{doc}</h4>
-                              {files[doc] && (
-                                <p className="text-xs text-slate-500 mt-1">{files[doc]?.name}</p>
-                              )}
-                            </div>
+                            {isMissing && (
+                              <p className="text-xs text-destructive font-medium mt-1.5 ml-1">Dokumen ini wajib diunggah.</p>
+                            )}
                           </div>
-                          <div className="shrink-0 relative">
-                            <input 
-                              type="file" 
-                              id={`file-upload-${doc}`}
-                              accept=".pdf,.jpg,.jpeg,.png"
-                              onChange={(e) => handleFileChange(doc, e)}
-                              className="hidden"
-                            />
-                            <Button 
-                              type="button" 
-                              variant={files[doc] ? "ghost" : "outline"} 
-                              size="sm" 
-                              leftIcon={<Upload className="w-4 h-4" />}
-                              onClick={() => document.getElementById(`file-upload-${doc}`)?.click()}
-                            >
-                              {files[doc] ? "Ubah File" : "Pilih File"}
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
 
                     <div className="bg-warning/10 border-l-4 border-warning p-4 rounded-r-xl flex gap-3">
