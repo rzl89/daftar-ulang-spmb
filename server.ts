@@ -819,7 +819,7 @@ function getPossibleDateNorms(dateStr: string): string[] {
 // POST — Verifikasi kelulusan (Public)
 app.post('/api/verifikasi', async (req, res) => {
   try {
-    const { nisn, tanggalLahir } = req.body;
+    const { nisn, tanggalLahir, namaLengkap, tempatLahir, jenisKelamin } = req.body;
     if (!nisn || !tanggalLahir) {
       return res.status(400).json({ message: 'NISN dan Tanggal Lahir wajib diisi' });
     }
@@ -841,7 +841,21 @@ app.post('/api/verifikasi', async (req, res) => {
     const isDateMatch = inputDateOptions.some(date => storedDateOptions.includes(date));
 
     if (!isDateMatch) {
-      return res.status(404).json({ message: 'Tanggal lahir tidak sesuai dengan data kelulusan.' });
+      return res.status(404).json({ field: 'tanggalLahir', message: 'Tanggal lahir tidak sesuai dengan data kelulusan.' });
+    }
+
+    const normalizeStr = (str: string) => (str || '').trim().toLowerCase().replace(/\s+/g, ' ');
+
+    if (namaLengkap && normalizeStr(student.namaLengkap) !== normalizeStr(namaLengkap)) {
+      return res.status(404).json({ field: 'namaLengkap', message: 'Nama lengkap tidak sesuai dengan data kelulusan.' });
+    }
+
+    if (tempatLahir && normalizeStr(student.tempatLahir) !== normalizeStr(tempatLahir)) {
+      return res.status(404).json({ field: 'tempatLahir', message: 'Tempat lahir tidak sesuai dengan data kelulusan.' });
+    }
+
+    if (jenisKelamin && normalizeStr(student.jenisKelamin) !== normalizeStr(jenisKelamin)) {
+      return res.status(404).json({ field: 'jenisKelamin', message: 'Jenis kelamin tidak sesuai dengan data kelulusan.' });
     }
 
     res.json({ success: true, data: student });

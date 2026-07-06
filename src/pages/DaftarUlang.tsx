@@ -145,17 +145,23 @@ export default function DaftarUlang() {
       try {
         const nisn = getValues('nisn');
         const tanggalLahir = getValues('tanggalLahir');
+        const namaLengkap = getValues('namaLengkap');
+        const tempatLahir = getValues('tempatLahir');
+        const jenisKelamin = getValues('jenisKelamin');
+        
         const res = await fetch('/api/verifikasi', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nisn, tanggalLahir })
+          body: JSON.stringify({ nisn, tanggalLahir, namaLengkap, tempatLahir, jenisKelamin })
         });
         const result = await res.json();
         setIsSubmitting(false);
         
         if (!res.ok) {
-          toast.error(result.message || "Verifikasi gagal. Periksa kembali NISN dan Tanggal Lahir Anda.");
-          if (result.message?.includes("Tanggal lahir")) {
+          toast.error(result.message || "Verifikasi gagal. Periksa kembali data Anda.");
+          if (result.field) {
+            setError(result.field, { type: "server", message: result.message });
+          } else if (result.message?.includes("Tanggal lahir")) {
             setError("tanggalLahir", { type: "server", message: "Tanggal lahir tidak sesuai dengan data kelulusan" });
           } else {
             setError("nisn", { type: "server", message: "Data NISN tidak ditemukan atau Anda tidak terdaftar" });
