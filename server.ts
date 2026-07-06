@@ -865,14 +865,6 @@ app.post('/api/verifikasi', async (req, res) => {
       return res.status(404).json({ field: 'namaLengkap', message: 'Nama lengkap tidak sesuai dengan data kelulusan.' });
     }
 
-    if (tempatLahir && normalizeStr(student.tempatLahir) !== normalizeStr(tempatLahir)) {
-      return res.status(404).json({ field: 'tempatLahir', message: 'Tempat lahir tidak sesuai dengan data kelulusan.' });
-    }
-
-    if (jenisKelamin && normalizeStr(student.jenisKelamin) !== normalizeStr(jenisKelamin)) {
-      return res.status(404).json({ field: 'jenisKelamin', message: 'Jenis kelamin tidak sesuai dengan data kelulusan.' });
-    }
-
     res.json({ success: true, data: student });
   } catch (e: any) {
     console.error('Verifikasi Error:', e.message);
