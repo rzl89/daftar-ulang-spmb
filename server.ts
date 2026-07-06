@@ -216,6 +216,21 @@ app.get('/api/registrations/:nisn', async (req, res) => {
   }
 });
 
+// GET — List sekolah asal unik
+app.get('/api/sekolah-asal', async (_req, res) => {
+  try {
+    const rows = await db.query.passedStudents.findMany({
+      columns: { asalSekolah: true }
+    });
+    // Gunakan Set untuk mendapatkan nilai unik
+    const uniqueSchools = Array.from(new Set(rows.map(r => (r.asalSekolah || '').trim()).filter(Boolean))).sort();
+    res.json(uniqueSchools);
+  } catch (e: any) {
+    console.error('GET /api/sekolah-asal', e.message);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
 // Zod schema for server-side registration validation
 const RegistrationSchema = z.object({
   dataPribadi: z.object({

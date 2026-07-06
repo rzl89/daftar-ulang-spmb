@@ -52,6 +52,7 @@ export default function DaftarUlang() {
   // Dynamic form questions from API
   const [questions, setQuestions] = useState<FormQuestion[]>([]);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+  const [sekolahList, setSekolahList] = useState<string[]>([]);
 
   const { register, handleSubmit, trigger, getValues, setError, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {} as Record<string, any>,
@@ -62,9 +63,11 @@ export default function DaftarUlang() {
     Promise.all([
       fetch('/api/form-questions').then(r => r.json()),
       fetch('/api/jurusan').then(r => r.json()),
-    ]).then(([q, j]) => {
+      fetch('/api/sekolah-asal').then(r => r.json()),
+    ]).then(([q, j, s]) => {
       setQuestions(Array.isArray(q) ? q : []);
       setJurusanList(Array.isArray(j) ? j : []);
+      setSekolahList(Array.isArray(s) ? s : []);
       setIsLoadingQuestions(false);
     }).catch(err => {
       console.error('Failed to load form config:', err);
@@ -515,6 +518,7 @@ export default function DaftarUlang() {
             {...register(q.fieldName)}
             error={errorMsg}
             required={q.isRequired}
+            list={q.fieldName === 'asalSekolah' ? 'sekolah-saran' : undefined}
           />
         );
     }
@@ -539,6 +543,12 @@ export default function DaftarUlang() {
             else handleNext(); 
           }}>
             <div className="p-6 md:p-10 min-h-[400px]">
+              <datalist id="sekolah-saran">
+                {sekolahList.map((sekolah, index) => (
+                  <option key={index} value={sekolah} />
+                ))}
+              </datalist>
+              
               <div>
                 {/* ─── Step 1: Data Pribadi ───────────────────────── */}
                 {currentStep === 1 && (
