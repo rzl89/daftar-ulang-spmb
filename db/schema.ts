@@ -32,6 +32,7 @@ export const registrations = pgTable('registrations', {
     aktaKelahiranUrl?: string;
     pasFotoUrl?: string;
   }>(),
+  dynamicData: jsonb('dynamic_data').$type<Record<string, any>>().default({}).notNull(),
   
   // Timestamps
   createdAt: timestamp('created_at').defaultNow().notNull(),

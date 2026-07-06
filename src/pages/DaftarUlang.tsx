@@ -1,45 +1,40 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Upload, FileText, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Clock } from "lucide-react";
+import { Upload, FileText, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Clock, Loader2 } from "lucide-react";
 import { Button, Card, CardContent, Input, Select, Stepper } from "@/components/ui";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { toast } from "sonner";
 import { useSettingsStore } from "@/store/useSettingsStore";
 
-const STEPS = ["Data Pribadi", "Data Orang Tua", "Data Akademik", "Upload & Konfirmasi"];
+// ─── Types ──────────────────────────────────────────────────────────────────
+interface FormQuestion {
+  id: number;
+  section: string;
+  fieldName: string;
+  label: string;
+  fieldType: string;
+  placeholder: string | null;
+  options: string[] | null;
+  isRequired: boolean;
+  isActive: boolean;
+  sortOrder: number;
+}
 
-// Schema Validasi
-const formSchema = z.object({
-  dataPribadi: z.object({
-    nisn: z.string().length(10, "NISN harus tepat 10 angka").regex(/^\d+$/, "NISN hanya boleh berisi angka"),
-    namaLengkap: z.string().min(3, "Nama lengkap minimal 3 karakter"),
-    tempatLahir: z.string().min(3, "Tempat lahir wajib diisi"),
-    tanggalLahir: z.string().min(1, "Tanggal lahir wajib diisi"),
-    jenisKelamin: z.enum(["L", "P"], { message: "Jenis kelamin wajib dipilih" }),
-    agama: z.string().min(1, "Agama wajib diisi"),
-    alamat: z.string().min(10, "Alamat lengkap wajib diisi (minimal 10 karakter)"),
-  }),
-  dataOrtu: z.object({
-    namaAyah: z.string().min(3, "Nama Ayah wajib diisi"),
-    pekerjaanAyah: z.string().min(1, "Pekerjaan Ayah wajib dipilih"),
-    namaIbu: z.string().min(3, "Nama Ibu wajib diisi"),
-    pekerjaanIbu: z.string().min(1, "Pekerjaan Ibu wajib dipilih"),
-    noTelpOrtu: z.string().min(10, "Nomor telepon valid wajib diisi").regex(/^\d+$/, "Hanya boleh berisi angka"),
-  }),
-  dataAkademik: z.object({
-    asalSekolah: z.string().min(3, "Asal sekolah wajib diisi"),
-    jurusanPilihan1: z.string().min(1, "Pilihan jurusan 1 wajib dipilih"),
-    jurusanPilihan2: z.string().min(1, "Pilihan jurusan 2 wajib dipilih"),
-  })
-}).refine(data => data.dataAkademik.jurusanPilihan1 !== data.dataAkademik.jurusanPilihan2, {
-  message: "Jurusan Pilihan 1 dan 2 tidak boleh sama",
-  path: ["dataAkademik", "jurusanPilihan2"],
-});
+// Map sections to step indices
+const SECTION_STEP_MAP: Record<string, number> = {
+  dataPribadi: 1,
+  dataOrangTua: 2,
+  akademik: 3,
+  dokumen: 4,
+};
 
-type FormData = z.infer<typeof formSchema>;
+const STEP_TITLES = [
+  "Data Pribadi",
+  "Data Orang Tua",
+  "Data Akademik",
+  "Upload & Konfirmasi",
+];
 
 export default function DaftarUlang() {
   const navigate = useNavigate();
@@ -54,80 +49,140 @@ export default function DaftarUlang() {
   });
   const [missingDocs, setMissingDocs] = useState<string[]>([]);
 
-  const { register, handleSubmit, trigger, getValues, setError, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      dataPribadi: { jenisKelamin: 'L', agama: 'Islam' },
-      dataAkademik: { jurusanPilihan1: '', jurusanPilihan2: '' }
-    }
+  // Dynamic form questions from API
+  const [questions, setQuestions] = useState<FormQuestion[]>([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+
+  const { register, handleSubmit, trigger, getValues, setError, setValue, watch, formState: { errors } } = useForm({
+    defaultValues: {} as Record<string, any>,
   });
 
+  // ─── Fetch form questions & jurusan on mount ────────────────────────────────
   useEffect(() => {
-    fetch('/api/jurusan')
-      .then(res => res.json())
-      .then(data => setJurusanList(data))
-      .catch(err => console.error("Gagal mengambil data jurusan:", err));
+    Promise.all([
+      fetch('/api/form-questions').then(r => r.json()),
+      fetch('/api/jurusan').then(r => r.json()),
+    ]).then(([q, j]) => {
+      setQuestions(Array.isArray(q) ? q : []);
+      setJurusanList(Array.isArray(j) ? j : []);
+      setIsLoadingQuestions(false);
+    }).catch(err => {
+      console.error('Failed to load form config:', err);
+      toast.error('Gagal memuat konfigurasi form');
+      setIsLoadingQuestions(false);
+    });
   }, []);
 
-  const handleNext = async () => {
-    let fieldsToValidate: any = [];
-    if (currentStep === 1) {
-      fieldsToValidate = ['dataPribadi.nisn', 'dataPribadi.namaLengkap', 'dataPribadi.tempatLahir', 'dataPribadi.tanggalLahir', 'dataPribadi.jenisKelamin', 'dataPribadi.agama', 'dataPribadi.alamat'];
-    } else if (currentStep === 2) {
-      fieldsToValidate = ['dataOrtu.namaAyah', 'dataOrtu.pekerjaanAyah', 'dataOrtu.namaIbu', 'dataOrtu.pekerjaanIbu', 'dataOrtu.noTelpOrtu'];
-    } else if (currentStep === 3) {
-      fieldsToValidate = ['dataAkademik.asalSekolah', 'dataAkademik.jurusanPilihan1', 'dataAkademik.jurusanPilihan2'];
-    }
-
-    let isStepValid = await trigger(fieldsToValidate);
-    
-    if (isStepValid && currentStep === 3) {
-      const { jurusanPilihan1, jurusanPilihan2 } = getValues('dataAkademik');
-      if (jurusanPilihan1 === jurusanPilihan2) {
-        setError("dataAkademik.jurusanPilihan2", { type: "manual", message: "Jurusan Pilihan 1 dan 2 tidak boleh sama" });
-        isStepValid = false;
+  // ─── Group questions by step ──────────────────────────────────────────────
+  const questionsByStep = useMemo(() => {
+    const map: Record<number, FormQuestion[]> = { 1: [], 2: [], 3: [], 4: [] };
+    questions.forEach(q => {
+      const step = SECTION_STEP_MAP[q.section];
+      if (step && map[step]) {
+        map[step].push(q);
       }
-    }
+    });
+    // Sort each group by sortOrder
+    Object.values(map).forEach(arr => arr.sort((a, b) => a.sortOrder - b.sortOrder));
+    return map;
+  }, [questions]);
 
-    if (isStepValid) {
-      if (currentStep === 1) {
-        setIsSubmitting(true);
-        try {
-          const { nisn, tanggalLahir } = getValues('dataPribadi');
-          const res = await fetch('/api/verifikasi', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nisn, tanggalLahir })
-          });
-          const result = await res.json();
-          setIsSubmitting(false);
-          
-          if (!res.ok) {
-            toast.error(result.message || "Verifikasi gagal. Periksa kembali NISN dan Tanggal Lahir Anda.");
-            if (result.message?.includes("Tanggal lahir")) {
-              setError("dataPribadi.tanggalLahir", { type: "server", message: "Tanggal lahir tidak sesuai dengan data kelulusan" });
-            } else {
-              setError("dataPribadi.nisn", { type: "server", message: "Data NISN tidak ditemukan atau Anda tidak terdaftar" });
-            }
-            return;
-          }
-        } catch (error) {
-          setIsSubmitting(false);
-          toast.error("Gagal memverifikasi data. Periksa koneksi Anda.");
-          return;
+  // ─── Build per-step field names for validation ──────────────────────────────
+  const getFieldNamesForStep = (step: number): string[] => {
+    return (questionsByStep[step] || []).map(q => q.fieldName);
+  };
+
+  // ─── Validate dynamically ─────────────────────────────────────────────────
+  const validateStep = (step: number): { valid: boolean; firstError?: string } => {
+    const stepQuestions = questionsByStep[step] || [];
+    for (const q of stepQuestions) {
+      if (!q.isRequired) continue;
+      const val = getValues(q.fieldName);
+      if (val === undefined || val === null || val === '') {
+        setError(q.fieldName, { type: 'required', message: `${q.label} wajib diisi` });
+        return { valid: false, firstError: q.fieldName };
+      }
+      // Phone number validation
+      if (q.fieldType === 'tel' && val) {
+        if (!/^\d{10,15}$/.test(val)) {
+          setError(q.fieldName, { type: 'pattern', message: `${q.label} harus berupa 10-15 digit angka` });
+          return { valid: false, firstError: q.fieldName };
         }
       }
-
-      setCurrentStep(prev => prev + 1);
+      // NISN validation
+      if (q.fieldName === 'nisn' && val) {
+        if (!/^\d{10}$/.test(val)) {
+          setError(q.fieldName, { type: 'pattern', message: 'NISN harus tepat 10 digit angka' });
+          return { valid: false, firstError: q.fieldName };
+        }
+      }
     }
+
+    // Special: Check jurusan 1 !== jurusan 2
+    if (step === 3) {
+      const j1 = getValues('pilihanJurusan1');
+      const j2 = getValues('pilihanJurusan2');
+      if (j1 && j2 && j1 === j2) {
+        setError('pilihanJurusan2', { type: 'manual', message: 'Jurusan Pilihan 1 dan 2 tidak boleh sama' });
+        return { valid: false, firstError: 'pilihanJurusan2' };
+      }
+    }
+
+    return { valid: true };
+  };
+
+  // ─── Navigation ───────────────────────────────────────────────────────────
+  const handleNext = async () => {
+    const { valid } = validateStep(currentStep);
+    if (!valid) {
+      toast.error('Mohon lengkapi semua kolom yang wajib diisi.');
+      return;
+    }
+
+    // Special: Verify NISN on step 1
+    if (currentStep === 1) {
+      setIsSubmitting(true);
+      try {
+        const nisn = getValues('nisn');
+        const tanggalLahir = getValues('tanggalLahir');
+        const res = await fetch('/api/verifikasi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nisn, tanggalLahir })
+        });
+        const result = await res.json();
+        setIsSubmitting(false);
+        
+        if (!res.ok) {
+          toast.error(result.message || "Verifikasi gagal. Periksa kembali NISN dan Tanggal Lahir Anda.");
+          if (result.message?.includes("Tanggal lahir")) {
+            setError("tanggalLahir", { type: "server", message: "Tanggal lahir tidak sesuai dengan data kelulusan" });
+          } else {
+            setError("nisn", { type: "server", message: "Data NISN tidak ditemukan atau Anda tidak terdaftar" });
+          }
+          return;
+        }
+      } catch (error) {
+        setIsSubmitting(false);
+        toast.error("Gagal memverifikasi data. Periksa koneksi Anda.");
+        return;
+      }
+    }
+
+    setCurrentStep(prev => prev + 1);
   };
 
   const handlePrev = () => {
     if (currentStep > 1) setCurrentStep(prev => prev - 1);
   };
 
-  const onSubmitForm = async (data: FormData) => {
-    // Validasi apakah file sudah dipilih semua
+  // ─── Submit ───────────────────────────────────────────────────────────────
+  const onSubmitForm = async () => {
+    // Validate last step too
+    const { valid } = validateStep(currentStep);
+    if (!valid) return;
+
+    // Check required documents
     const unselected = Object.entries(files)
       .filter(([_, file]) => file === null)
       .map(([name]) => name);
@@ -148,7 +203,6 @@ export default function DaftarUlang() {
       const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '';
       const apiKey = import.meta.env.VITE_CLOUDINARY_API_KEY || '';
 
-      // Get signature from our backend
       const signRes = await fetch('/api/cloudinary/sign');
       if (!signRes.ok) throw new Error("Gagal mengambil signature upload");
       const { timestamp, signature } = await signRes.json();
@@ -185,8 +239,37 @@ export default function DaftarUlang() {
         setUploadProgress(10 + Math.round((uploadedCount / totalFiles) * 70));
       }
 
-      // 2. Submit to our Vercel backend
-      const payload = { ...data, dokumen };
+      // 2. Build payload from dynamic form values
+      const allValues = getValues();
+      
+      // Map known core fields to the fixed schema
+      const payload = {
+        dataPribadi: {
+          nisn: allValues.nisn || '',
+          namaLengkap: allValues.namaLengkap || '',
+          tempatLahir: allValues.tempatLahir || '',
+          tanggalLahir: allValues.tanggalLahir || '',
+          jenisKelamin: allValues.jenisKelamin || 'L',
+          agama: allValues.agama || 'Islam',
+          alamat: allValues.alamatLengkap || allValues.alamat || '',
+        },
+        dataOrtu: {
+          namaAyah: allValues.namaOrangTua || allValues.namaAyah || '',
+          pekerjaanAyah: allValues.pekerjaanOrangTua || allValues.pekerjaanAyah || '',
+          namaIbu: allValues.namaibu || allValues.namaIbu || '',
+          pekerjaanIbu: allValues.pekerjaaibu || allValues.pekerjaanIbu || '',
+          noTelpOrtu: allValues.noTelpOrangTua || allValues.noTelpOrtu || allValues.notelpibu || '',
+        },
+        dataAkademik: {
+          asalSekolah: allValues.asalSekolah || '',
+          jurusanPilihan1: allValues.pilihanJurusan1 || '',
+          jurusanPilihan2: allValues.pilihanJurusan2 || '',
+        },
+        dokumen,
+        // Store ALL dynamic field values for future flexibility
+        dynamicData: allValues,
+      };
+      
       setUploadProgress(90);
       
       const res = await fetch('/api/registrations', {
@@ -198,19 +281,21 @@ export default function DaftarUlang() {
       const result = await res.json();
       setUploadProgress(100);
       setIsSubmitting(false);
-      
-      if (res.ok) {
-        toast.success("Pendaftaran berhasil disimpan!");
-        navigate(`/bukti-daftar-ulang?nisn=${result.nisn}`);
-      } else {
-        toast.error(result.message || "Gagal menyimpan pendaftaran");
+
+      if (!res.ok) {
+        toast.error(result.message || "Terjadi kesalahan saat mengirim data.");
+        return;
       }
-    } catch (error: any) {
+
+      toast.success("Daftar ulang berhasil! Mengarahkan ke halaman bukti...");
+      navigate('/bukti-daftar-ulang', { state: { registration: result } });
+    } catch (err: any) {
       setIsSubmitting(false);
-      toast.error(error.message || "Gagal terhubung ke server. Periksa koneksi Anda.");
+      toast.error(err?.message || "Gagal mengirim data pendaftaran.");
     }
   };
 
+  // ─── File Handling ────────────────────────────────────────────────────────
   const handleFileChange = (docName: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -221,7 +306,6 @@ export default function DaftarUlang() {
         return;
       }
       
-      // Basic size validation 2MB
       if (selectedFile.size > 2 * 1024 * 1024) {
         toast.error(`Ukuran file ${docName} melebihi 2MB.`);
         return;
@@ -235,7 +319,7 @@ export default function DaftarUlang() {
     ...jurusanList.map(j => ({ value: j.code, label: j.name }))
   ];
 
-  // Check if registration is still open
+  // ─── Registration open check ──────────────────────────────────────────────
   const getSetting = useSettingsStore(s => s.getSetting);
   const isRegistrationOpen = getSetting('is_registration_open');
   const deadline = getSetting('registration_deadline');
@@ -267,6 +351,169 @@ export default function DaftarUlang() {
     );
   }
 
+  // ─── Loading state ────────────────────────────────────────────────────────
+  if (isLoadingQuestions) {
+    return (
+      <div className="w-full min-h-screen pt-32 pb-12 px-4 md:px-8 xl:max-w-6xl mx-auto flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <p className="text-slate-500 text-sm">Memuat formulir pendaftaran...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Dynamic Field Renderer ───────────────────────────────────────────────
+  const renderField = (q: FormQuestion) => {
+    const fieldError = (errors as any)[q.fieldName];
+    const errorMsg = fieldError?.message as string | undefined;
+
+    // Special: Jurusan fields use the jurusan API data
+    if (q.fieldName === 'pilihanJurusan1' || q.fieldName === 'pilihanJurusan2') {
+      return (
+        <Select
+          key={q.id}
+          label={q.label}
+          options={jurusanOptions}
+          {...register(q.fieldName)}
+          error={errorMsg}
+          required={q.isRequired}
+        />
+      );
+    }
+
+    switch (q.fieldType) {
+      case 'select': {
+        const opts = [
+          { value: '', label: `-- Pilih ${q.label} --` },
+          ...(q.options || []).map(o => ({ value: o, label: o }))
+        ];
+        return (
+          <Select
+            key={q.id}
+            label={q.label}
+            options={opts}
+            {...register(q.fieldName)}
+            error={errorMsg}
+            required={q.isRequired}
+          />
+        );
+      }
+
+      case 'radio': {
+        return (
+          <div key={q.id} className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700">
+              {q.label} {q.isRequired && <span className="text-destructive">*</span>}
+            </label>
+            <div className="flex flex-wrap gap-4">
+              {(q.options || []).map(opt => {
+                // Map display labels to stored values for jenisKelamin
+                let storeValue = opt;
+                if (q.fieldName === 'jenisKelamin') {
+                  if (opt === 'Laki-laki') storeValue = 'L';
+                  else if (opt === 'Perempuan') storeValue = 'P';
+                }
+                return (
+                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+                    <input
+                      type="radio"
+                      value={storeValue}
+                      {...register(q.fieldName)}
+                      className="w-4 h-4 text-primary focus:ring-primary border-slate-300"
+                    />
+                    {opt}
+                  </label>
+                );
+              })}
+            </div>
+            {errorMsg && <p className="text-xs text-destructive font-medium">{errorMsg}</p>}
+          </div>
+        );
+      }
+
+      case 'textarea':
+        return (
+          <div key={q.id} className="md:col-span-2 space-y-2">
+            <label className="block text-sm font-medium text-slate-700">
+              {q.label} {q.isRequired && <span className="text-destructive">*</span>}
+            </label>
+            <textarea 
+              className={`w-full rounded-xl border bg-white px-4 py-3 text-sm focus:outline-none transition-all ${errorMsg ? 'border-destructive focus:border-destructive focus:ring-2 focus:ring-destructive/10' : 'border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10'}`}
+              rows={3}
+              placeholder={q.placeholder || ''}
+              {...register(q.fieldName)}
+            />
+            {errorMsg && <p className="text-xs text-destructive font-medium">{errorMsg}</p>}
+          </div>
+        );
+
+      case 'date':
+        return (
+          <Input
+            key={q.id}
+            type="date"
+            label={q.label}
+            {...register(q.fieldName)}
+            error={errorMsg}
+            required={q.isRequired}
+          />
+        );
+
+      case 'number':
+        return (
+          <Input
+            key={q.id}
+            type="number"
+            label={q.label}
+            placeholder={q.placeholder || ''}
+            {...register(q.fieldName)}
+            error={errorMsg}
+            required={q.isRequired}
+          />
+        );
+
+      case 'email':
+        return (
+          <Input
+            key={q.id}
+            type="email"
+            label={q.label}
+            placeholder={q.placeholder || ''}
+            {...register(q.fieldName)}
+            error={errorMsg}
+            required={q.isRequired}
+          />
+        );
+
+      case 'tel':
+        return (
+          <Input
+            key={q.id}
+            type="tel"
+            label={q.label}
+            placeholder={q.placeholder || '08xxxxxxxxxx'}
+            {...register(q.fieldName)}
+            error={errorMsg}
+            required={q.isRequired}
+          />
+        );
+
+      case 'text':
+      default:
+        return (
+          <Input
+            key={q.id}
+            label={q.label}
+            placeholder={q.placeholder || ''}
+            {...register(q.fieldName)}
+            error={errorMsg}
+            required={q.isRequired}
+          />
+        );
+    }
+  };
+
   return (
     <div className="w-full min-h-screen pt-32 pb-12 px-4 md:px-8 xl:max-w-6xl mx-auto">
       <div className="mb-10 text-center">
@@ -275,180 +522,49 @@ export default function DaftarUlang() {
       </div>
 
       <div className="mb-10 px-2 md:px-10">
-        <Stepper steps={STEPS} currentStep={currentStep} />
+        <Stepper steps={STEP_TITLES} currentStep={currentStep} />
       </div>
 
       <Card className="shadow-xl shadow-slate-200/50 border-0 overflow-hidden">
         <CardContent className="p-0">
           <form onSubmit={(e) => { 
             e.preventDefault(); 
-            if (currentStep === 4) handleSubmit(onSubmitForm)(); 
+            if (currentStep === 4) onSubmitForm(); 
             else handleNext(); 
           }}>
             <div className="p-6 md:p-10 min-h-[400px]">
               <div>
+                {/* ─── Step 1: Data Pribadi ───────────────────────── */}
                 {currentStep === 1 && (
                   <div className="space-y-6">
                     <h2 className="text-xl font-bold text-slate-800 border-b pb-2 mb-6">1. Data Pribadi Calon Siswa</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Input 
-                        label="NISN (Nomor Induk Siswa Nasional)" 
-                        placeholder="10 Digit NISN" 
-                        {...register("dataPribadi.nisn")}
-                        error={errors.dataPribadi?.nisn?.message}
-                        required 
-                      />
-                      <Input 
-                        label="Nama Lengkap" 
-                        placeholder="Sesuai Ijazah/Akte" 
-                        {...register("dataPribadi.namaLengkap")}
-                        error={errors.dataPribadi?.namaLengkap?.message}
-                        required 
-                      />
-                      <Input 
-                        label="Tempat Lahir" 
-                        placeholder="Kota Lahir" 
-                        {...register("dataPribadi.tempatLahir")}
-                        error={errors.dataPribadi?.tempatLahir?.message}
-                        required 
-                      />
-                      <Input 
-                        type="date"
-                        label="Tanggal Lahir" 
-                        {...register("dataPribadi.tanggalLahir")}
-                        error={errors.dataPribadi?.tanggalLahir?.message}
-                        required 
-                      />
-                      <Select 
-                        label="Jenis Kelamin" 
-                        options={[
-                          {value: "L", label: "Laki-laki"},
-                          {value: "P", label: "Perempuan"}
-                        ]}
-                        {...register("dataPribadi.jenisKelamin")}
-                        error={errors.dataPribadi?.jenisKelamin?.message}
-                        required 
-                      />
-                      <Select 
-                        label="Agama" 
-                        options={[
-                          {value: "Islam", label: "Islam"},
-                          {value: "Kristen", label: "Kristen"},
-                          {value: "Katolik", label: "Katolik"},
-                          {value: "Hindu", label: "Hindu"},
-                          {value: "Buddha", label: "Buddha"},
-                          {value: "Konghucu", label: "Konghucu"}
-                        ]}
-                        {...register("dataPribadi.agama")}
-                        error={errors.dataPribadi?.agama?.message}
-                        required 
-                      />
-                      <div className="md:col-span-2 space-y-2">
-                        <label className="block text-sm font-medium text-slate-700">Alamat Lengkap Sesuai KK <span className="text-destructive">*</span></label>
-                        <textarea 
-                          className={`w-full rounded-xl border bg-white px-4 py-3 text-sm focus:outline-none transition-all ${errors.dataPribadi?.alamat ? 'border-destructive focus:border-destructive focus:ring-2 focus:ring-destructive/10' : 'border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10'}`}
-                          rows={3}
-                          placeholder="Jalan, RT/RW, Desa/Kelurahan, Kecamatan..."
-                          {...register("dataPribadi.alamat")}
-                        />
-                        {errors.dataPribadi?.alamat && (
-                          <p className="text-xs text-destructive font-medium">{errors.dataPribadi.alamat.message}</p>
-                        )}
-                      </div>
+                      {(questionsByStep[1] || []).map(q => renderField(q))}
                     </div>
                   </div>
                 )}
 
+                {/* ─── Step 2: Data Orang Tua ─────────────────────── */}
                 {currentStep === 2 && (
                   <div className="space-y-6">
                     <h2 className="text-xl font-bold text-slate-800 border-b pb-2 mb-6">2. Data Orang Tua / Wali</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Input 
-                        label="Nama Ayah" 
-                        placeholder="Nama Lengkap Ayah" 
-                        {...register("dataOrtu.namaAyah")}
-                        error={errors.dataOrtu?.namaAyah?.message}
-                        required 
-                      />
-                      <Select 
-                        label="Pekerjaan Ayah" 
-                        options={[
-                          {value: "", label: "-- Pilih Pekerjaan --"},
-                          {value: "PNS", label: "PNS / TNI / POLRI"},
-                          {value: "Wiraswasta", label: "Wiraswasta / Pengusaha"},
-                          {value: "Karyawan Swasta", label: "Karyawan Swasta"},
-                          {value: "Petani/Nelayan", label: "Petani / Nelayan"},
-                          {value: "Buruh", label: "Buruh / Pekerja Lepas"},
-                          {value: "Lainnya", label: "Lainnya"}
-                        ]}
-                        {...register("dataOrtu.pekerjaanAyah")}
-                        error={errors.dataOrtu?.pekerjaanAyah?.message}
-                        required 
-                      />
-                      <Input 
-                        label="Nama Ibu" 
-                        placeholder="Nama Lengkap Ibu" 
-                        {...register("dataOrtu.namaIbu")}
-                        error={errors.dataOrtu?.namaIbu?.message}
-                        required 
-                      />
-                      <Select 
-                        label="Pekerjaan Ibu" 
-                        options={[
-                          {value: "", label: "-- Pilih Pekerjaan --"},
-                          {value: "Ibu Rumah Tangga", label: "Ibu Rumah Tangga"},
-                          {value: "PNS", label: "PNS / TNI / POLRI"},
-                          {value: "Wiraswasta", label: "Wiraswasta / Pengusaha"},
-                          {value: "Karyawan Swasta", label: "Karyawan Swasta"},
-                          {value: "Buruh", label: "Buruh / Pekerja Lepas"},
-                          {value: "Lainnya", label: "Lainnya"}
-                        ]}
-                        {...register("dataOrtu.pekerjaanIbu")}
-                        error={errors.dataOrtu?.pekerjaanIbu?.message}
-                        required 
-                      />
-                      <Input 
-                        label="No. Telepon / WhatsApp Orang Tua" 
-                        placeholder="Contoh: 081234567890" 
-                        className="md:col-span-2"
-                        {...register("dataOrtu.noTelpOrtu")}
-                        error={errors.dataOrtu?.noTelpOrtu?.message}
-                        required 
-                      />
+                      {(questionsByStep[2] || []).map(q => renderField(q))}
                     </div>
                   </div>
                 )}
 
+                {/* ─── Step 3: Data Akademik ──────────────────────── */}
                 {currentStep === 3 && (
                   <div className="space-y-6">
                     <h2 className="text-xl font-bold text-slate-800 border-b pb-2 mb-6">3. Data Akademik & Pilihan Jurusan</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Input 
-                        label="Asal Sekolah Dasar (SMP/MTs)" 
-                        placeholder="Nama SMP/MTs Asal" 
-                        className="md:col-span-2"
-                        {...register("dataAkademik.asalSekolah")}
-                        error={errors.dataAkademik?.asalSekolah?.message}
-                        required 
-                      />
-                      <Select 
-                        label="Pilihan Jurusan 1" 
-                        options={jurusanOptions}
-                        {...register("dataAkademik.jurusanPilihan1")}
-                        error={errors.dataAkademik?.jurusanPilihan1?.message}
-                        required 
-                      />
-                      <Select 
-                        label="Pilihan Jurusan 2" 
-                        options={jurusanOptions}
-                        {...register("dataAkademik.jurusanPilihan2")}
-                        error={errors.dataAkademik?.jurusanPilihan2?.message}
-                        required 
-                      />
+                      {(questionsByStep[3] || []).map(q => renderField(q))}
                     </div>
                   </div>
                 )}
 
+                {/* ─── Step 4: Upload & Konfirmasi ────────────────── */}
                 {currentStep === 4 && (
                   <div className="space-y-6">
                     <h2 className="text-xl font-bold text-slate-800 border-b pb-2 mb-6">4. Upload Berkas & Konfirmasi</h2>
@@ -571,7 +687,6 @@ export default function DaftarUlang() {
                 <Button 
                   type="submit"
                   variant="primary"
-                  className=""
                   isLoading={isSubmitting}
                   disabled={isSubmitting}
                   leftIcon={<CheckCircle2 className="w-5 h-5" />}

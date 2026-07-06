@@ -245,6 +245,8 @@ const RegistrationSchema = z.object({
     aktaKelahiranUrl: z.string().url().optional(),
     pasFotoUrl: z.string().url().optional(),
   }).optional(),
+  // Dynamic fields managed by admin via Kelola Pertanyaan
+  dynamicData: z.record(z.string(), z.any()).optional(),
 });
 
 // POST — Submit new registration (with server-side validation)
@@ -304,6 +306,7 @@ app.post('/api/registrations', async (req, res) => {
       pilihanJurusan2: data.dataAkademik?.jurusanPilihan2 || '',
       status: 'MENUNGGU_VERIFIKASI',
       dokumen: data.dokumen || null,
+      dynamicData: data.dynamicData || {},
     }).returning();
 
     console.log(`✅ Pendaftaran: ${registrationId} — ${data.dataPribadi.namaLengkap}`);
@@ -748,12 +751,12 @@ app.delete('/api/admin/passed-students', async (_req, res) => {
   }
 });
 
-// Helper: normalize any date string to YYYY-MM-DD
-function normalizeDateStr(raw: string): string {
-  if (!raw) return '';
-  const trimmed = raw.trim();
+function getPossibleDateNorms(dateStr: string): string[] {
+  if (!dateStr) return [];
+  const trimmed = dateStr.trim();
+  const results = new Set<string>();
 
-  // Handle Excel serial date number (e.g. 39814)
+  // Excel serial dates
   if (/^\d{4,5}$/.test(trimmed)) {
     const serial = Number(trimmed);
     const utcDays = Math.floor(serial - 25569);
@@ -761,31 +764,40 @@ function normalizeDateStr(raw: string): string {
     const yyyy = d.getUTCFullYear();
     const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
     const dd = String(d.getUTCDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
+    results.add(`${yyyy}-${mm}-${dd}`);
+    return Array.from(results);
   }
 
   // Already YYYY-MM-DD (possibly with time suffix)
   if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
-    return trimmed.substring(0, 10);
+    results.add(trimmed.substring(0, 10));
+    return Array.from(results);
   }
 
-  // Handle dd/mm/yyyy or dd-mm-yyyy
-  const match = trimmed.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})$/);
+  // Handle dd/mm/yyyy or mm/dd/yyyy or yyyy/mm/dd
+  const match = trimmed.match(/^(\d{1,4})[/\-](\d{1,2})[/\-](\d{1,4})$/);
   if (match) {
-    const part1 = parseInt(match[1], 10);
-    const part2 = parseInt(match[2], 10);
-    const year = match[3];
+    const p1 = parseInt(match[1], 10);
+    const p2 = parseInt(match[2], 10);
+    const p3 = parseInt(match[3], 10);
 
-    let day: number, month: number;
-    if (part1 > 12) {
-      day = part1; month = part2;
-    } else if (part2 > 12) {
-      day = part2; month = part1;
-    } else {
-      // Ambiguous — assume dd/mm/yyyy (Indonesian convention)
-      day = part1; month = part2;
+    // Format: YYYY-MM-DD
+    if (p1 > 1000) {
+      results.add(`${p1}-${String(p2).padStart(2, '0')}-${String(p3).padStart(2, '0')}`);
+    } 
+    // Format: DD-MM-YYYY or MM-DD-YYYY
+    else if (p3 > 1000) {
+      if (p1 <= 12 && p2 <= 31) {
+        // Assume MM-DD-YYYY
+        results.add(`${p3}-${String(p1).padStart(2, '0')}-${String(p2).padStart(2, '0')}`);
+      }
+      if (p2 <= 12 && p1 <= 31) {
+        // Assume DD-MM-YYYY
+        results.add(`${p3}-${String(p2).padStart(2, '0')}-${String(p1).padStart(2, '0')}`);
+      }
     }
-    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    
+    if (results.size > 0) return Array.from(results);
   }
 
   // Fallback: try parsing as JS Date
@@ -794,10 +806,14 @@ function normalizeDateStr(raw: string): string {
     const yyyy = parsed.getFullYear();
     const mm = String(parsed.getMonth() + 1).padStart(2, '0');
     const dd = String(parsed.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
+    results.add(`${yyyy}-${mm}-${dd}`);
   }
 
-  return trimmed;
+  if (results.size === 0) {
+    results.add(trimmed);
+  }
+
+  return Array.from(results);
 }
 
 // POST — Verifikasi kelulusan (Public)
@@ -818,10 +834,13 @@ app.post('/api/verifikasi', async (req, res) => {
     }
 
     // Normalize both dates to YYYY-MM-DD before comparison
-    const storedDateNorm = normalizeDateStr(student.tanggalLahir || '');
-    const inputDateNorm = normalizeDateStr(tanggalLahir);
+    const storedDateOptions = getPossibleDateNorms(student.tanggalLahir || '');
+    const inputDateOptions = getPossibleDateNorms(tanggalLahir);
 
-    if (!storedDateNorm || storedDateNorm !== inputDateNorm) {
+    // Check if there is any intersection between stored and input possibilities
+    const isDateMatch = inputDateOptions.some(date => storedDateOptions.includes(date));
+
+    if (!isDateMatch) {
       return res.status(404).json({ message: 'Tanggal lahir tidak sesuai dengan data kelulusan.' });
     }
 

@@ -23,6 +23,7 @@ interface Registration {
   pilihanJurusan2: string;
   status: string;
   createdAt: string;
+  dynamicData?: Record<string, any>;
 }
 
 export default function DataPeserta() {
@@ -354,6 +355,27 @@ export default function DataPeserta() {
                     </div>
                   </div>
                 </div>
+
+                {selectedStudent.dynamicData && Object.keys(selectedStudent.dynamicData).length > 0 && (
+                  <div className="border-t border-slate-100 dark:border-slate-700 pt-6">
+                    <h4 className="text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-3">Data Tambahan (Dinamis)</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {Object.entries(selectedStudent.dynamicData).map(([key, value]) => {
+                        // Skip common keys that are already in fixed columns if needed
+                        const skipKeys = ['nisn', 'namaLengkap', 'tempatLahir', 'tanggalLahir', 'jenisKelamin', 'agama', 'alamat', 'alamatLengkap', 'asalSekolah', 'namaAyah', 'pekerjaanAyah', 'namaIbu', 'pekerjaanIbu', 'noTelpOrtu', 'notelpibu', 'namaOrangTua', 'pekerjaanOrangTua', 'pilihanJurusan1', 'pilihanJurusan2'];
+                        if (skipKeys.includes(key)) return null;
+                        
+                        return (
+                          <div key={key}>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                            <p className="font-medium text-slate-800 dark:text-slate-200">{String(value || '-')}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
               </div>
               <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
                 <button onClick={() => generateBuktiPdf({
