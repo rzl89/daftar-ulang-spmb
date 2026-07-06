@@ -98,6 +98,9 @@ export default function DaftarUlang() {
 
   // ─── Validate dynamically ─────────────────────────────────────────────────
   const validateStep = (step: number): { valid: boolean; firstError?: string } => {
+    // Step 4 (Dokumen) uses custom state and native HTML validation, not react-hook-form
+    if (step === 4) return { valid: true };
+
     const stepQuestions = questionsByStep[step] || [];
     for (const q of stepQuestions) {
       if (!q.isRequired) continue;
