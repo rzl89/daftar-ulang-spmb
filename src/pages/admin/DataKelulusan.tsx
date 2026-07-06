@@ -509,7 +509,7 @@ export default function DataKelulusan() {
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
               className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full shadow-xl"
             >
               <div className="flex items-center gap-3 mb-4">

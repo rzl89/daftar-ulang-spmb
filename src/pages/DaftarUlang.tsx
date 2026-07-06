@@ -53,7 +53,7 @@ export default function DaftarUlang() {
     "Akta Kelahiran": null
   });
 
-  const { register, handleSubmit, trigger, getValues, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, trigger, getValues, setError, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       dataPribadi: { jenisKelamin: 'L', agama: 'Islam' },
@@ -78,7 +78,16 @@ export default function DaftarUlang() {
       fieldsToValidate = ['dataAkademik.asalSekolah', 'dataAkademik.jurusanPilihan1', 'dataAkademik.jurusanPilihan2'];
     }
 
-    const isStepValid = await trigger(fieldsToValidate);
+    let isStepValid = await trigger(fieldsToValidate);
+    
+    if (isStepValid && currentStep === 3) {
+      const { jurusanPilihan1, jurusanPilihan2 } = getValues('dataAkademik');
+      if (jurusanPilihan1 === jurusanPilihan2) {
+        setError("dataAkademik.jurusanPilihan2", { type: "manual", message: "Jurusan Pilihan 1 dan 2 tidak boleh sama" });
+        isStepValid = false;
+      }
+    }
+
     if (isStepValid) {
       if (currentStep === 1) {
         setIsSubmitting(true);
@@ -194,6 +203,13 @@ export default function DaftarUlang() {
   const handleFileChange = (docName: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+      
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(selectedFile.type)) {
+        toast.error(`Format file ${docName} tidak didukung. Harap unggah PDF, JPG, atau PNG.`);
+        return;
+      }
+      
       // Basic size validation 2MB
       if (selectedFile.size > 2 * 1024 * 1024) {
         toast.error(`Ukuran file ${docName} melebihi 2MB.`);
