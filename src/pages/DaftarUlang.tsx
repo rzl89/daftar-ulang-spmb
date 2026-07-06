@@ -53,6 +53,7 @@ export default function DaftarUlang() {
   const [questions, setQuestions] = useState<FormQuestion[]>([]);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const [sekolahList, setSekolahList] = useState<string[]>([]);
+  const [verifiedStudent, setVerifiedStudent] = useState<Record<string, any> | null>(null);
 
   const { register, handleSubmit, trigger, getValues, setError, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {} as Record<string, any>,
@@ -100,6 +101,8 @@ export default function DaftarUlang() {
     const stepQuestions = questionsByStep[step] || [];
     for (const q of stepQuestions) {
       if (!q.isRequired) continue;
+      // Skip hidden fields (asalSekolah is auto-populated)
+      if (q.fieldName === 'asalSekolah') continue;
       const val = getValues(q.fieldName);
       if (val === undefined || val === null || val === '') {
         setError(q.fieldName, { type: 'required', message: `${q.label} wajib diisi` });
@@ -170,6 +173,11 @@ export default function DaftarUlang() {
             setError("nisn", { type: "server", message: "Data NISN tidak ditemukan atau Anda tidak terdaftar" });
           }
           return;
+        }
+
+        // Store verified student data (for auto-populating asalSekolah etc.)
+        if (result.data) {
+          setVerifiedStudent(result.data);
         }
       } catch (error) {
         setIsSubmitting(false);
@@ -270,7 +278,7 @@ export default function DaftarUlang() {
           noTelpOrtu: allValues.noTelpOrangTua || allValues.noTelpOrtu || allValues.notelpibu || '',
         },
         dataAkademik: {
-          asalSekolah: allValues.asalSekolah || '',
+          asalSekolah: verifiedStudent?.asalSekolah || allValues.asalSekolah || '',
           jurusanPilihan1: allValues.pilihanJurusan1 || '',
           jurusanPilihan2: allValues.pilihanJurusan2 || '',
         },
@@ -376,6 +384,9 @@ export default function DaftarUlang() {
   const renderField = (q: FormQuestion) => {
     const fieldError = (errors as any)[q.fieldName];
     const errorMsg = fieldError?.message as string | undefined;
+
+    // Skip: asalSekolah is auto-populated from passed_students data
+    if (q.fieldName === 'asalSekolah') return null;
 
     // Special: Jurusan fields use the jurusan API data
     if (q.fieldName === 'pilihanJurusan1' || q.fieldName === 'pilihanJurusan2') {
@@ -543,12 +554,6 @@ export default function DaftarUlang() {
             else handleNext(); 
           }}>
             <div className="p-6 md:p-10 min-h-[400px]">
-              <datalist id="sekolah-saran">
-                {sekolahList.map((sekolah, index) => (
-                  <option key={index} value={sekolah} />
-                ))}
-              </datalist>
-              
               <div>
                 {/* ─── Step 1: Data Pribadi ───────────────────────── */}
                 {currentStep === 1 && (

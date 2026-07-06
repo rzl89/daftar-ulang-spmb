@@ -250,7 +250,7 @@ const RegistrationSchema = z.object({
     noTelpOrtu: z.string().min(10).max(20).regex(/^\d+$/, 'Nomor telepon harus berupa angka'),
   }),
   dataAkademik: z.object({
-    asalSekolah: z.string().min(1).max(150),
+    asalSekolah: z.string().max(150).optional().default(''),
     jurusanPilihan1: z.string().min(1),
     jurusanPilihan2: z.string().min(1),
   }),
