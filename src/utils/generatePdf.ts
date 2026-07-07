@@ -10,7 +10,7 @@ interface PdfData {
   createdAt: string;
 }
 
-export function generateBuktiPdf(data: PdfData): void {
+export async function generateBuktiPdf(data: PdfData): Promise<void> {
   const settings = useSettingsStore.getState();
   const schoolName = settings.getSetting('school_name');
   const schoolFullName = settings.getSetting('school_full_name');
@@ -19,6 +19,7 @@ export function generateBuktiPdf(data: PdfData): void {
   const schoolPhone = settings.getSetting('school_phone');
   const schoolEmail = settings.getSetting('school_email');
   const schoolCity = settings.getSetting('school_city') || 'Kota';
+  const schoolLogoUrl = settings.getSetting('school_logo');
 
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -34,6 +35,25 @@ export function generateBuktiPdf(data: PdfData): void {
   // ─── HEADER ───
   doc.setFillColor(26, 35, 126); // primary #1A237E
   doc.rect(0, 0, pageWidth, 45, 'F');
+
+  // Load logo if available
+  if (schoolLogoUrl) {
+    try {
+      const res = await fetch(schoolLogoUrl);
+      const blob = await res.blob();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      // Add logo on the left of the header
+      // 30mm x 30mm logo at x=margin, y=7.5 (centered vertically in the 45mm header)
+      doc.addImage(base64, 'PNG', margin, 7.5, 30, 30);
+    } catch (e) {
+      console.warn("Failed to load school logo for PDF", e);
+    }
+  }
 
   doc.setTextColor(249, 168, 37); // accent
   doc.setFont('helvetica', 'bold');

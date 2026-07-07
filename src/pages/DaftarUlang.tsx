@@ -308,7 +308,7 @@ export default function DaftarUlang() {
       }
 
       toast.success("Daftar ulang berhasil! Mengarahkan ke halaman bukti...");
-      navigate('/bukti-daftar-ulang', { state: { registration: result } });
+      navigate(`/bukti-daftar-ulang?nisn=${result.nisn}`, { state: { registration: result } });
     } catch (err: any) {
       setIsSubmitting(false);
       toast.error(err?.message || "Gagal mengirim data pendaftaran.");
