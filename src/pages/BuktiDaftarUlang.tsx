@@ -10,6 +10,8 @@ interface RegistrationData {
   registrationId: string;
   nisn: string;
   namaLengkap: string;
+  tempatLahir?: string;
+  tanggalLahir?: string;
   pilihanJurusan1: string;
   status: string;
   createdAt: string;
@@ -122,7 +124,16 @@ export default function BuktiDaftarUlang() {
                 </div>
                 
                 <div className="col-span-2">
-                  <span className="block text-xs text-slate-400 font-semibold uppercase mb-1">Pilihan Jurusan 1</span>
+                  <span className="block text-xs text-slate-400 font-semibold uppercase mb-1">Tempat, Tanggal Lahir</span>
+                  <span className="font-bold text-slate-800 text-lg">
+                    {data.tempatLahir && data.tanggalLahir
+                      ? `${data.tempatLahir}, ${new Date(data.tanggalLahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                      : data.tempatLahir || data.tanggalLahir || '-'}
+                  </span>
+                </div>
+                
+                <div className="col-span-2">
+                  <span className="block text-xs text-slate-400 font-semibold uppercase mb-1">Jurusan Diterima</span>
                   <span className="font-bold text-primary text-lg">{data.pilihanJurusan1}</span>
                 </div>
               </div>

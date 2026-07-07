@@ -5,8 +5,9 @@ interface PdfData {
   registrationId: string;
   namaLengkap: string;
   nisn: string;
+  tempatLahir?: string;
+  tanggalLahir?: string;
   pilihanJurusan1: string;
-  pilihanJurusan2?: string;
   createdAt: string;
 }
 
@@ -87,11 +88,16 @@ export async function generateBuktiPdf(data: PdfData): Promise<void> {
   y += 28;
 
   // Data rows
+  // Format tempat, tanggal lahir
+  const ttl = data.tempatLahir && data.tanggalLahir
+    ? `${data.tempatLahir}, ${new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(data.tanggalLahir))}`
+    : data.tempatLahir || data.tanggalLahir || '-';
+
   const rows: [string, string][] = [
     ['Nama Lengkap', data.namaLengkap],
     ['NISN', data.nisn],
-    ['Pilihan Jurusan 1', data.pilihanJurusan1],
-    ['Pilihan Jurusan 2', data.pilihanJurusan2 || '-'],
+    ['Tempat, Tanggal Lahir', ttl],
+    ['Jurusan Diterima', data.pilihanJurusan1],
     ['Tanggal Daftar Ulang', new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(data.createdAt))],
   ];
 
