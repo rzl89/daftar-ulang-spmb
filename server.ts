@@ -499,6 +499,21 @@ app.delete('/api/admin/registrations/:id', async (req, res) => {
   }
 });
 
+// POST - Trigger SPMB photo sync
+app.post('/api/admin/spmb-photo-sync', async (_req, res) => {
+  try {
+    const { spawn } = await import('child_process');
+    const child = spawn('npx', ['tsx', 'download-foto.ts', '--sync-db'], {
+      detached: true,
+      stdio: 'inherit',
+    });
+    child.unref();
+    res.json({ message: 'Proses penarikan foto dimulai di latar belakang' });
+  } catch (e: any) {
+    res.status(500).json({ message: 'Gagal memulai penarikan foto' });
+  }
+});
+
 // ================================================================
 //  SETTINGS — ADMIN
 // ================================================================

@@ -31,6 +31,7 @@ export const registrations = pgTable('registrations', {
     kartuKeluargaUrl?: string;
     aktaKelahiranUrl?: string;
     pasFotoUrl?: string;
+    fotoSpmbUrl?: string;
   }>(),
   dynamicData: jsonb('dynamic_data').$type<Record<string, any>>().default({}).notNull(),
   

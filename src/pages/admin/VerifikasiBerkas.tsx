@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '@/utils/api';
 import { motion } from '@/utils/motion-lite';
-import { FileCheck, CheckCircle2, XCircle, AlertTriangle, User, FileText } from 'lucide-react';
+import { FileCheck, CheckCircle2, XCircle, AlertTriangle, User, FileText, Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Registration {
@@ -29,6 +29,7 @@ export default function VerifikasiBerkas() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('MENUNGGU_VERIFIKASI');
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
+  const [isSyncingSpmb, setIsSyncingSpmb] = useState(false);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -75,6 +76,25 @@ export default function VerifikasiBerkas() {
     }
   };
 
+  const handleTarikFotoSpmb = async () => {
+    try {
+      setIsSyncingSpmb(true);
+      toast.info('Memulai penarikan foto dari SPMB. Proses ini mungkin memakan waktu beberapa menit...');
+      const res = await apiFetch('/api/admin/spmb-photo-sync', { method: 'POST' });
+      if (res.ok) {
+        toast.success('Berhasil menarik foto dari SPMB!');
+        fetchData();
+      } else {
+        const err = await res.json();
+        toast.error(err.message || 'Gagal menarik foto SPMB');
+      }
+    } catch (e) {
+      toast.error('Terjadi kesalahan jaringan');
+    } finally {
+      setIsSyncingSpmb(false);
+    }
+  };
+
   const tabs = [
     { id: 'MENUNGGU_VERIFIKASI', label: 'Menunggu' },
     { id: 'DITERIMA', label: 'Terverifikasi' },
@@ -91,6 +111,16 @@ export default function VerifikasiBerkas() {
             Verifikasi Berkas
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Pengecekan dan validasi dokumen pendaftar</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleTarikFotoSpmb}
+            disabled={isSyncingSpmb}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+          >
+            {isSyncingSpmb ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            {isSyncingSpmb ? 'Menarik Foto...' : 'Tarik Foto dari SPMB'}
+          </button>
         </div>
       </div>
 

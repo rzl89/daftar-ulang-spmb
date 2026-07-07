@@ -10,6 +10,10 @@ interface PdfData {
   asalSekolah?: string;
   pilihanJurusan1: string;
   createdAt: string;
+  dokumen?: {
+    fotoSpmbUrl?: string;
+    pasFotoUrl?: string;
+  };
 }
 
 export async function generateBuktiPdf(data: PdfData): Promise<void> {
@@ -103,6 +107,26 @@ export async function generateBuktiPdf(data: PdfData): Promise<void> {
     ['Tanggal Daftar Ulang', new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(data.createdAt))],
   ];
 
+  let imageUrl = data.dokumen?.fotoSpmbUrl || data.dokumen?.pasFotoUrl;
+  if (imageUrl) {
+    try {
+      const res = await fetch(imageUrl);
+      const blob = await res.blob();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      // 30mm x 40mm pas foto at top right
+      doc.addImage(base64, 'JPEG', pageWidth - margin - 30, y, 30, 40);
+    } catch (e) {
+      console.warn("Failed to load pas foto for PDF", e);
+    }
+  }
+
+  // Draw data rows
+
   rows.forEach(([label, value], index) => {
     const rowY = y + index * 16;
 
@@ -148,12 +172,10 @@ export async function generateBuktiPdf(data: PdfData): Promise<void> {
 
   y += 30;
 
-  // ─── SIGNATURE AREA ───
-  doc.setTextColor(100, 116, 139);
-  doc.setFont('helvetica', 'normal');
+  // ─── SIGNATURE ───
   doc.setFontSize(9);
-  const dateStr = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
-  doc.text(`${schoolCity}, ${dateStr}`, pageWidth - margin, y, { align: 'right' });
+  doc.setTextColor(30, 41, 59);
+  doc.text(`${schoolCity}, ${new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}`, pageWidth - margin, y, { align: 'right' });
 
   y += 5;
   doc.text('Panitia SPMB', pageWidth - margin, y, { align: 'right' });

@@ -16,6 +16,10 @@ interface RegistrationData {
   pilihanJurusan1: string;
   status: string;
   createdAt: string;
+  dokumen?: {
+    fotoSpmbUrl?: string;
+    pasFotoUrl?: string;
+  };
 }
 
 export default function BuktiDaftarUlang() {
@@ -106,8 +110,13 @@ export default function BuktiDaftarUlang() {
               </div>
             </div>
 
-            <div className="p-8 border-b-2 border-dashed border-slate-200">
-              <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+            <div className="p-8 border-b-2 border-dashed border-slate-200 relative">
+              {data.dokumen?.fotoSpmbUrl && (
+                <div className="absolute top-8 right-8 w-24 h-32 bg-slate-100 rounded shadow-sm border border-slate-200 overflow-hidden flex items-center justify-center">
+                  <img src={data.dokumen.fotoSpmbUrl} alt="Pas Foto" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-y-6 gap-x-4 pr-32">
                 <div>
                   <span className="block text-xs text-slate-400 font-semibold uppercase mb-1">No. Registrasi</span>
                   <span className="font-bold text-slate-800 text-lg">{data.registrationId}</span>
