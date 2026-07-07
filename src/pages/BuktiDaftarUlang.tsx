@@ -12,6 +12,7 @@ interface RegistrationData {
   namaLengkap: string;
   tempatLahir?: string;
   tanggalLahir?: string;
+  asalSekolah?: string;
   pilihanJurusan1: string;
   status: string;
   createdAt: string;
