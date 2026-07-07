@@ -35,7 +35,6 @@ const USERNAME = 'afrizalfirdaus277@gmail.com';
 const PASSWORD = 'Rizal1234!';
 const STUDENT_LIST_URL = 'https://operator.spmb.id/banten/257/operasional/verval/akun/smp';
 const DOWNLOAD_DIR = path.join(process.cwd(), 'downloads', 'foto-siswa');
-const MAX_PAGES = 10; // We increase this to make sure we cover all 457 students
 
 // ============================================================
 // HELPER: Upload to Cloudinary directly from Buffer
@@ -112,6 +111,20 @@ async function run() {
     }
   }
 
+  // Filter who to process
+  let toProcess = dbRegistrations;
+  if (isSyncDb) {
+    toProcess = dbRegistrations.filter(r => !(r.dokumen && r.dokumen.fotoSpmbUrl));
+    console.log(`📋 Ada ${toProcess.length} siswa yang perlu disinkronisasi fotonya.`);
+    if (toProcess.length === 0) {
+       console.log('✅ Semua sudah tersinkronisasi.');
+       return;
+    }
+  } else {
+    // If not sync db, just for testing
+    toProcess = [{ namaLengkap: 'NADILAH', nisn: '0107055530', registrationId: 'test-123' }];
+  }
+
   const browser = await chromium.launch({ headless: true, slowMo: 100 });
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
@@ -121,7 +134,7 @@ async function run() {
     await page.goto(SPMB_URL, { waitUntil: 'networkidle', timeout: 60000 });
     await page.waitForTimeout(3000);
 
-    const emailSelectors = ['input[type="email"]', 'input[name="email"]', 'input[name="username"]', 'input[placeholder*="email" i]', 'input[placeholder*="username" i]'];
+    const emailSelectors = ['input[name="identifier"]', 'input[type="email"]', 'input[name="email"]', 'input[name="username"]', 'input[placeholder*="email" i]', 'input[placeholder*="username" i]'];
     let emailFilled = false;
     for (const sel of emailSelectors) {
       const el = page.locator(sel).first();
@@ -168,151 +181,111 @@ async function run() {
     let totalProcessed = 0;
     let totalFailed = 0;
 
-    for (let pageNum = 1; pageNum <= MAX_PAGES; pageNum++) {
-      console.log(`\n--- Halaman ${pageNum} dari ${MAX_PAGES} ---`);
-      await page.waitForTimeout(2000);
-
-      const rows = page.locator('table tbody tr, [class*="datatable"] tbody tr, .p-datatable-tbody tr');
-      const rowCount = await rows.count();
-      if (rowCount === 0) await page.waitForTimeout(5000);
-
-      for (let i = 0; i < rowCount; i++) {
-        try {
-          const currentRows = page.locator('table tbody tr, [class*="datatable"] tbody tr, .p-datatable-tbody tr');
-          const row = currentRows.nth(i);
-          const cells = row.locator('td');
-          if (await cells.count() < 3) continue;
-
-          let nama = (await cells.nth(1).innerText()).trim().replace(/[🟢🔴🟡⚫⬤●○◉]/g, '').trim();
-          let nisn = (await cells.nth(2).innerText()).trim();
-
-          let matchingDbRecord = null;
-          if (isSyncDb) {
-            matchingDbRecord = dbRegistrations.find(r => r.nisn === nisn);
-            if (!matchingDbRecord) {
-              console.log(`  ⏭️ [${i + 1}/${rowCount}] ${nama} (${nisn}) - Tidak ada di DB kita, skip.`);
-              continue;
-            }
-            if (matchingDbRecord.dokumen && matchingDbRecord.dokumen.fotoSpmbUrl) {
-              console.log(`  ⏭️ [${i + 1}/${rowCount}] ${nama} (${nisn}) - Foto sudah tersinkronisasi, skip.`);
-              continue;
-            }
-          }
-
-          const safeFilename = sanitizeFilename(`${nisn}_${nama}`);
-          const filePath = path.join(DOWNLOAD_DIR, `${safeFilename}.jpg`);
-
-          if (!isSyncDb && fs.existsSync(filePath)) {
-            console.log(`  ⏭️ [${i + 1}/${rowCount}] ${nama} - sudah ada, skip.`);
-            continue;
-          }
-
-          console.log(`  📷 [${i + 1}/${rowCount}] Memproses ${nama} (${nisn})...`);
-          const detailBtn = row.getByText(/Detail/i).first();
-          if (await detailBtn.isVisible({ timeout: 2000 }).catch(() => false)) await detailBtn.click();
-          else await row.locator('a, button').last().click();
-
-          await page.waitForTimeout(3000);
-          const berkasTab = page.getByText('Berkas', { exact: true }).first();
-          if (await berkasTab.isVisible({ timeout: 5000 }).catch(() => false)) {
-            await berkasTab.click();
-            await page.waitForTimeout(2000);
-          } else {
-            throw new Error('Tab Berkas tidak ditemukan');
-          }
-
-          let downloadedUrl = '';
-          let imageBuffer: Buffer | null = null;
-          const allLihatBerkas = page.getByText(/Lihat Berkas/i);
-          if (await allLihatBerkas.count() >= 3) {
-            const photoLihatBerkas = allLihatBerkas.nth(2);
-            const href = await photoLihatBerkas.getAttribute('href');
-            if (href && href.startsWith('http')) {
-              downloadedUrl = href;
-            } else {
-              const [newPage] = await Promise.all([
-                context.waitForEvent('page', { timeout: 5000 }).catch(() => null),
-                photoLihatBerkas.click(),
-              ]);
-              if (newPage) {
-                await newPage.waitForLoadState('networkidle').catch(() => null);
-                const imgEl = newPage.locator('img').first();
-                if (await imgEl.isVisible({ timeout: 5000 }).catch(() => false)) {
-                  let src = await imgEl.getAttribute('src');
-                  if (src) downloadedUrl = src.startsWith('http') ? src : new URL(src, newPage.url()).href;
+    for (let i = 0; i < toProcess.length; i++) {
+       const student = toProcess[i];
+       const nama = student.namaLengkap;
+       const nisn = student.nisn;
+       const safeFilename = sanitizeFilename(`${nisn}_${nama}`);
+       const filePath = path.join(DOWNLOAD_DIR, `${safeFilename}.jpg`);
+       
+       console.log(`\n  📷 [${i + 1}/${toProcess.length}] Mencari ${nama} (${nisn})...`);
+       
+       // Search student
+       const searchBox = page.locator('input[type="search"], input[placeholder*="Cari" i], input[placeholder*="Search" i], .p-inputtext').first();
+       if (await searchBox.isVisible({ timeout: 3000 }).catch(() => false)) {
+         await searchBox.fill('');
+         await searchBox.fill(nisn);
+         await searchBox.press('Enter');
+         await page.waitForTimeout(3000);
+       } else {
+         console.log(`    ❌ Kolom pencarian tidak ditemukan!`);
+         totalFailed++;
+         continue;
+       }
+       
+       // Find student row using NISN
+       const studentLocator = page.locator(`text="${nisn}"`).first();
+       if (await studentLocator.isVisible({ timeout: 5000 }).catch(() => false)) {
+          // Find the three-dots menu in the same row
+          const buttonSelector = await studentLocator.evaluate((el) => {
+             let row = el.parentElement;
+             while (row && (!row.className || !row.className.includes('border'))) {
+                if (row.parentElement === document.body) break;
+                row = row.parentElement;
+             }
+             if (row) {
+                const svgs = row.querySelectorAll('svg');
+                for (let i = 0; i < svgs.length; i++) {
+                   if (svgs[i].innerHTML.includes('circle') || (svgs[i].parentElement && svgs[i].parentElement.tagName === 'BUTTON')) {
+                      const btn = svgs[i].closest('button') || svgs[i].parentElement;
+                      if (btn) {
+                        btn.setAttribute('data-target-click', 'true');
+                        return 'data-target-click';
+                      }
+                   }
                 }
-                if (!downloadedUrl) {
-                  const pageUrl = newPage.url();
-                  if (pageUrl.match(/\.(jpg|jpeg|png|webp|gif)/i)) {
-                    downloadedUrl = pageUrl;
-                    imageBuffer = await (await newPage.request.get(pageUrl)).body();
-                  }
+             }
+             return null;
+          });
+          
+          if (buttonSelector === 'data-target-click') {
+             console.log(`    🔘 Klik menu aksi...`);
+             await page.click('[data-target-click="true"]');
+             await page.waitForTimeout(1000);
+             
+             console.log(`    🔘 Klik Detail Ajuan...`);
+             await page.click('text="Detail Ajuan"');
+             await page.waitForTimeout(4000); // Wait for modal/page
+             
+             // Extract photo
+             const images = await page.evaluate(() => {
+                return Array.from(document.querySelectorAll('img')).map(img => img.src);
+             });
+             
+             let downloadedUrl = '';
+             // Usually the profile image is the last one or not a logo
+             const possiblePhotos = images.filter(img => !img.includes('Logo') && !img.includes('logo'));
+             if (possiblePhotos.length > 0) {
+                // Get the last one or the one matching "Avatar" / "file.spmb.id"
+                downloadedUrl = possiblePhotos[possiblePhotos.length - 1];
+             }
+             
+             if (downloadedUrl) {
+                console.log(`    🖼️ Foto ditemukan: ${downloadedUrl}`);
+                if (isSyncDb) {
+                   console.log(`    📤 Mengunggah ke Cloudinary...`);
+                   const buffer = await getBufferFromUrl(downloadedUrl);
+                   const cloudinaryUrl = await uploadToCloudinary(buffer, student.id, nisn);
+                   
+                   const existingDoc = student.dokumen || {};
+                   await db.update(schema.registrations)
+                     .set({ dokumen: { ...existingDoc, fotoSpmbUrl: cloudinaryUrl } })
+                     .where(eq(schema.registrations.id, student.id));
+                   
+                   console.log(`    ✅ Disimpan di Cloudinary & DB`);
+                } else {
+                   await downloadFile(downloadedUrl, filePath);
+                   console.log(`    ✅ Disimpan di: ${safeFilename}.jpg`);
                 }
-                await newPage.close();
-              }
-            }
-          }
-
-          if (downloadedUrl || imageBuffer) {
-            if (isSyncDb && matchingDbRecord) {
-               console.log(`    📤 Mengunggah ke Cloudinary...`);
-               const buffer = imageBuffer || await getBufferFromUrl(downloadedUrl);
-               const cloudinaryUrl = await uploadToCloudinary(buffer, matchingDbRecord.registrationId, nisn);
-               
-               // Update DB
-               const existingDoc = matchingDbRecord.dokumen || {};
-               await db.update(schema.registrations)
-                 .set({ dokumen: { ...existingDoc, fotoSpmbUrl: cloudinaryUrl } })
-                 .where(eq(schema.registrations.id, matchingDbRecord.id));
-               
-               console.log(`    ✅ Disimpan di Cloudinary & DB`);
-            } else if (!isSyncDb && downloadedUrl) {
-               await downloadFile(downloadedUrl, filePath);
-               console.log(`    ✅ Disimpan di: ${safeFilename}.jpg`);
-            }
-            totalProcessed++;
+                totalProcessed++;
+             } else {
+                console.log(`    ❌ Foto tidak ditemukan untuk ${nama}`);
+                totalFailed++;
+             }
+             
+             // Go back to list
+             console.log(`    ↩️ Kembali ke daftar...`);
+             await page.goto(STUDENT_LIST_URL, { waitUntil: 'networkidle', timeout: 30000 });
+             await page.waitForTimeout(2000);
+             
           } else {
-            console.log(`    ❌ Gagal mengambil foto untuk ${nama}`);
-            totalFailed++;
+             console.log(`    ❌ Tombol aksi tidak ditemukan untuk ${nama}`);
+             totalFailed++;
           }
-
-          await page.goto(STUDENT_LIST_URL, { waitUntil: 'networkidle', timeout: 30000 });
-          await page.waitForTimeout(2000);
-          if (pageNum > 1) {
-            const pgBtn = page.locator(`.p-paginator button:has-text("${pageNum}"), [class*="paginator"] button:has-text("${pageNum}")`).first();
-            if (await pgBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-              await pgBtn.click();
-              await page.waitForTimeout(2000);
-            }
-          }
-
-        } catch (err) {
-          console.log(`    ❌ Error: ${(err as Error).message}`);
+       } else {
+          console.log(`    ❌ Siswa dengan NISN ${nisn} tidak ditemukan di pencarian SPMB`);
           totalFailed++;
-          await page.goto(STUDENT_LIST_URL, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => null);
-          await page.waitForTimeout(2000);
-          if (pageNum > 1) {
-            const pgBtn = page.locator(`.p-paginator button:has-text("${pageNum}")`).first();
-            if (await pgBtn.isVisible({ timeout: 3000 }).catch(() => false)) await pgBtn.click();
-          }
-        }
-      }
-
-      if (pageNum < MAX_PAGES) {
-        const nextBtn = page.getByText(`${pageNum + 1}`, { exact: true }).first();
-        if (await nextBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-          await nextBtn.click();
-          await page.waitForTimeout(3000);
-        } else {
-          const arrowNext = page.locator('[class*="paginator"] [class*="next"], .p-paginator-next').first();
-          if (await arrowNext.isVisible({ timeout: 3000 }).catch(() => false)) {
-            await arrowNext.click();
-            await page.waitForTimeout(3000);
-          } else {
-            break; // No more pages
-          }
-        }
-      }
+       }
     }
 
     console.log('\n' + '='.repeat(60));
