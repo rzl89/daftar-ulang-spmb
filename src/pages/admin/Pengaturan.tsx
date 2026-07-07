@@ -269,6 +269,11 @@ export default function Pengaturan() {
                       <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Alamat Lengkap</label>
                       <textarea name="school_address" value={settings.school_address} onChange={handleChange} rows={2} placeholder="Alamat lengkap sekolah" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all dark:text-white resize-none" />
                     </div>
+                    
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Kota / Kabupaten</label>
+                      <input type="text" name="school_city" value={settings.school_city} onChange={handleChange} placeholder="Misal: Kota Serang" className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all dark:text-white" />
+                    </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                       <div className="space-y-1.5">

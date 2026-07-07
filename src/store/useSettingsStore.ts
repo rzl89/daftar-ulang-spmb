@@ -20,6 +20,7 @@ interface SettingsState {
   school_email: string;
   school_website: string;
   school_tagline: string;
+  school_city: string;
   is_registration_open: string;
   quota: string;
   registration_deadline: string;
@@ -45,6 +46,7 @@ const DEFAULTS: Omit<SettingsState, 'isLoaded' | 'fetchSettings' | 'getSetting'>
   school_email: 'email@sekolah.sch.id',
   school_website: 'www.sekolah.sch.id',
   school_tagline: 'Tagline Sekolah',
+  school_city: 'Kota',
   is_registration_open: 'true',
   quota: '100',
   registration_deadline: '',

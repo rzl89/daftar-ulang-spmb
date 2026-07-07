@@ -144,7 +144,7 @@ export async function generateBuktiPdf(data: PdfData): Promise<void> {
   doc.text('PENTING:', margin + 6, y + 7);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.text('Cetak dan bawa dokumen ini saat hari pertama Pengenalan Lingkungan Sekolah (PLS).', margin + 6, y + 14);
+  doc.text('Cetak dan bawa dokumen ini saat hari pertama MPLS (Masa Pengenalan Lingkungan Sekolah).', margin + 6, y + 14);
 
   y += 30;
 
