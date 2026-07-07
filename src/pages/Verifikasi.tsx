@@ -12,6 +12,7 @@ export default function Verifikasi() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<null | 'success' | 'not-found'>(null);
   const [studentData, setStudentData] = useState<any>(null);
+  const [registrationStatus, setRegistrationStatus] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleCekKelulusan = async (e: React.FormEvent) => {
@@ -19,6 +20,7 @@ export default function Verifikasi() {
     setIsLoading(true);
     setResult(null);
     setStudentData(null);
+    setRegistrationStatus(null);
     
     try {
       const res = await fetch('/api/verifikasi', {
@@ -31,6 +33,7 @@ export default function Verifikasi() {
       
       if (res.ok && data.success) {
         setStudentData(data.data);
+        setRegistrationStatus(data.registrationStatus || null);
         setResult("success");
       } else {
         setErrorMessage(data.message || 'Data tidak ditemukan.');
@@ -148,12 +151,43 @@ export default function Verifikasi() {
                     </div>
                   </div>
 
-                  <Link to={`/daftar-ulang?nisn=${studentData.nisn}`}>
-                    <Button size="xl" className="w-full md:w-auto group">
-                      Lanjutkan Proses Daftar Ulang
-                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
+                  {registrationStatus === 'MENUNGGU_VERIFIKASI' ? (
+                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl">
+                      <p className="font-semibold text-blue-800">Daftar Ulang Sedang Diproses</p>
+                      <p className="text-sm text-blue-700 mt-1">Data pendaftaran ulang Anda sedang diverifikasi oleh admin. Harap menunggu informasi selanjutnya.</p>
+                      <Link to={`/bukti-daftar-ulang?nisn=${studentData.nisn}`}>
+                        <Button size="sm" variant="outline" className="mt-4 border-blue-500 text-blue-700 hover:bg-blue-100">Lihat Bukti Daftar Ulang</Button>
+                      </Link>
+                    </div>
+                  ) : registrationStatus === 'DITERIMA' ? (
+                    <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl">
+                      <p className="font-semibold text-emerald-800">Daftar Ulang Diterima!</p>
+                      <p className="text-sm text-emerald-700 mt-1">Proses daftar ulang Anda telah berhasil diverifikasi dan disetujui.</p>
+                      <Link to={`/bukti-daftar-ulang?nisn=${studentData.nisn}`}>
+                        <Button size="sm" variant="outline" className="mt-4 border-emerald-500 text-emerald-700 hover:bg-emerald-100">Cetak Bukti</Button>
+                      </Link>
+                    </div>
+                  ) : registrationStatus === 'DITOLAK' ? (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl">
+                      <p className="font-semibold text-red-800">Daftar Ulang Ditolak</p>
+                      <p className="text-sm text-red-700 mt-1">Mohon maaf, berkas daftar ulang Anda ditolak oleh admin. Silakan hubungi panitia untuk informasi lebih lanjut.</p>
+                    </div>
+                  ) : registrationStatus === 'REVISI' ? (
+                    <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl">
+                      <p className="font-semibold text-amber-800">Daftar Ulang Perlu Revisi</p>
+                      <p className="text-sm text-amber-700 mt-1">Terdapat data atau berkas yang perlu diperbaiki. Silakan ajukan ulang form daftar ulang Anda.</p>
+                      <Link to={`/daftar-ulang?nisn=${studentData.nisn}`}>
+                        <Button size="sm" className="mt-4 bg-amber-600 hover:bg-amber-700 text-white">Revisi Berkas Sekarang</Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <Link to={`/daftar-ulang?nisn=${studentData.nisn}`}>
+                      <Button size="xl" className="w-full md:w-auto group">
+                        Lanjutkan Proses Daftar Ulang
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
+                  )}
                 </div>
 
               </div>

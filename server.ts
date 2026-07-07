@@ -289,7 +289,9 @@ app.post('/api/registrations', async (req, res) => {
     const existing = await db.query.registrations.findFirst({
       where: eq(schema.registrations.nisn, data.dataPribadi.nisn),
     });
-    if (existing) return res.status(400).json({ message: 'NISN sudah terdaftar sebelumnya' });
+    if (existing && existing.status !== 'REVISI') {
+      return res.status(400).json({ message: 'NISN sudah terdaftar sebelumnya' });
+    }
 
     // Check registration deadline
     const deadlineSetting = await db.query.settings.findFirst({
@@ -309,11 +311,10 @@ app.post('/api/registrations', async (req, res) => {
       return res.status(403).json({ message: 'Pendaftaran sedang ditutup oleh admin.' });
     }
 
-    const suffix = crypto.randomBytes(4).toString('hex').toUpperCase();
-    const registrationId = `SPMB-${new Date().getFullYear()}-${suffix}`;
+    let registrationIdStr = existing ? existing.registrationId : `SPMB-${new Date().getFullYear()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
-    const [row] = await db.insert(schema.registrations).values({
-      registrationId,
+    const insertData = {
+      registrationId: registrationIdStr,
       nisn: data.dataPribadi.nisn,
       namaLengkap: data.dataPribadi.namaLengkap,
       tempatLahir: data.dataPribadi.tempatLahir,
@@ -330,9 +331,24 @@ app.post('/api/registrations', async (req, res) => {
       status: 'MENUNGGU_VERIFIKASI',
       dokumen: data.dokumen || null,
       dynamicData: data.dynamicData || {},
-    }).returning();
+      updatedAt: new Date()
+    };
 
-    console.log(`✅ Pendaftaran: ${registrationId} — ${data.dataPribadi.namaLengkap}`);
+    let row;
+    if (existing) {
+      const rows = await db.update(schema.registrations)
+        .set(insertData)
+        .where(eq(schema.registrations.id, existing.id))
+        .returning();
+      row = rows[0];
+    } else {
+      const rows = await db.insert(schema.registrations)
+        .values(insertData)
+        .returning();
+      row = rows[0];
+    }
+
+    console.log(`✅ Pendaftaran: ${registrationIdStr} — ${data.dataPribadi.namaLengkap}`);
     res.status(201).json(row);
   } catch (e: any) {
     console.error('POST /api/registrations', e);
@@ -454,7 +470,7 @@ app.get('/api/admin/registrations', async (_req, res) => {
 app.put('/api/admin/registrations/:id', async (req, res) => {
   try {
     const { status } = req.body;
-    if (!['MENUNGGU_VERIFIKASI', 'DITERIMA', 'DITOLAK'].includes(status)) {
+    if (!['MENUNGGU_VERIFIKASI', 'DITERIMA', 'DITOLAK', 'REVISI'].includes(status)) {
       return res.status(400).json({ message: 'Status tidak valid' });
     }
     const [row] = await db.update(schema.registrations)
@@ -873,7 +889,15 @@ app.post('/api/verifikasi', async (req, res) => {
       return res.status(404).json({ field: 'namaLengkap', message: 'Nama lengkap tidak sesuai dengan data kelulusan.' });
     }
 
-    res.json({ success: true, data: student });
+    const registration = await db.query.registrations.findFirst({
+      where: (reg, { eq }) => eq(reg.nisn, nisn)
+    });
+
+    res.json({ 
+      success: true, 
+      data: student,
+      registrationStatus: registration ? registration.status : null 
+    });
   } catch (e: any) {
     console.error('Verifikasi Error:', e.message);
     res.status(500).json({ message: 'Terjadi kesalahan server' });

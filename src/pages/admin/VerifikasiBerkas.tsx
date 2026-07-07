@@ -9,10 +9,11 @@ interface Registration {
   registrationId: string;
   nisn: string;
   namaLengkap: string;
+  tempatLahir?: string;
+  tanggalLahir?: string;
+  asalSekolah?: string;
+  pilihanJurusan1?: string;
   status: string;
-  dataPribadi: any;
-  dataOrtu: any;
-  dataAkademik: any;
   dokumen: {
     ijazahUrl?: string;
     kartuKeluargaUrl?: string;
@@ -191,7 +192,7 @@ export default function VerifikasiBerkas() {
                       <XCircle className="w-4 h-4" /> Tolak
                     </button>
                     <button 
-                      onClick={() => toast.success('Pesan revisi dikirim ke siswa')}
+                      onClick={() => handleVerifikasi(reg.id, 'REVISI', 'Minta revisi dikirim')}
                       className="col-span-2 flex items-center justify-center gap-1 px-3 py-2 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 rounded-xl font-medium text-sm transition-colors"
                     >
                       <AlertTriangle className="w-4 h-4" /> Minta Revisi
@@ -201,9 +202,11 @@ export default function VerifikasiBerkas() {
                   <div className={`text-center py-2 rounded-xl text-sm font-semibold border ${
                     reg.status === 'DITERIMA' 
                       ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' 
+                      : reg.status === 'REVISI'
+                      ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
                       : 'bg-red-50 text-red-600 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
                   }`}>
-                    {reg.status === 'DITERIMA' ? 'TERVERIFIKASI' : 'DITOLAK'}
+                    {reg.status === 'DITERIMA' ? 'TERVERIFIKASI' : reg.status === 'REVISI' ? 'PERLU REVISI' : 'DITOLAK'}
                   </div>
                 )}
               </div>
@@ -232,11 +235,11 @@ export default function VerifikasiBerkas() {
               <div>
                 <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Data Pribadi & Akademik</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 text-sm">
-                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">Nama Lengkap</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.dataPribadi?.namaLengkap || selectedRegistration.namaLengkap}</span></div>
-                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">NISN</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.dataPribadi?.nisn || selectedRegistration.nisn}</span></div>
-                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">Tempat, Tgl Lahir</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.dataPribadi?.tempatLahir || '-'}, {selectedRegistration.dataPribadi?.tanggalLahir || '-'}</span></div>
-                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">Asal Sekolah</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.dataAkademik?.asalSekolah || '-'}</span></div>
-                  <div className="sm:col-span-2"><span className="text-slate-500 dark:text-slate-400 block text-xs">Pilihan Jurusan</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.dataAkademik?.jurusanPilihan1 || '-'}</span></div>
+                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">Nama Lengkap</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.namaLengkap}</span></div>
+                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">NISN</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.nisn}</span></div>
+                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">Tempat, Tgl Lahir</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.tempatLahir || '-'}, {selectedRegistration.tanggalLahir || '-'}</span></div>
+                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">Asal Sekolah</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.asalSekolah || '-'}</span></div>
+                  <div className="sm:col-span-2"><span className="text-slate-500 dark:text-slate-400 block text-xs">Pilihan Jurusan</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.pilihanJurusan1 || '-'}</span></div>
                 </div>
               </div>
 
