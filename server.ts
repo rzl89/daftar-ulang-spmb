@@ -301,7 +301,7 @@ app.post('/api/registrations', async (req, res) => {
       return res.status(403).json({ message: 'Pendaftaran sedang ditutup oleh admin.' });
     }
 
-    const suffix = crypto.randomBytes(6).toString('hex').toUpperCase();
+    const suffix = crypto.randomBytes(4).toString('hex').toUpperCase();
     const registrationId = `SPMB-${new Date().getFullYear()}-${suffix}`;
 
     const [row] = await db.insert(schema.registrations).values({
