@@ -4,38 +4,27 @@ import path from 'path';
 import https from 'https';
 import http from 'http';
 import dotenv from 'dotenv';
+import * as schema from './db/schema.ts';
+import { eq } from 'drizzle-orm';
+import { v2 as cloudinary } from 'cloudinary';
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
 
 dotenv.config();
 
-// Try to import DB and Cloudinary if running in sync mode
-let db: any;
-let schema: any;
-let cloudinary: any;
-let eq: any;
-
+let db: any = null;
 const isSyncDb = process.argv.includes('--sync-db');
 if (isSyncDb) {
-  try {
-    const dbModule = require('./db/index.js');
-    const schemaModule = require('./db/schema.js');
-    const drizzleOrm = require('drizzle-orm');
-    cloudinary = require('cloudinary').v2;
-    
-    // Cloudinary config
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
-    
-    db = dbModule.db;
-    schema = schemaModule;
-    eq = drizzleOrm.eq;
-    console.log('✅ DB and Cloudinary initialized for sync.');
-  } catch (err) {
-    console.error('❌ Failed to load DB/Cloudinary modules. Run with tsx.', err);
-    process.exit(1);
-  }
+  // Cloudinary config
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+  
+  const sqlClient = neon(process.env.DATABASE_URL!);
+  db = drizzle(sqlClient, { schema });
+  console.log('✅ DB and Cloudinary initialized for sync.');
 }
 
 // ============================================================
