@@ -23,9 +23,9 @@ export default function BuktiDaftarUlang() {
   const navigate = useNavigate();
   const schoolFullName = useSettingsStore(s => s.getSetting('school_full_name'));
   const schoolYear = useSettingsStore(s => s.getSetting('school_year'));
-  
+
   const nisn = searchParams.get("nisn");
-  
+
   const [data, setData] = useState<RegistrationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export default function BuktiDaftarUlang() {
 
   return (
     <div className="w-full min-h-screen pt-32 pb-12 px-6 md:px-8 max-w-3xl mx-auto flex flex-col items-center">
-      
+
       <div className="w-20 h-20 bg-success/10 text-success rounded-full flex items-center justify-center mb-6">
         <CheckCircle2 className="w-10 h-10" />
       </div>
@@ -92,7 +92,7 @@ export default function BuktiDaftarUlang() {
         <Card className="w-full shadow-2xl border-0 overflow-hidden relative">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-slate-50/50 rounded-full" />
           <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-8 h-8 bg-slate-50/50 rounded-full" />
-          
+
           <CardContent className="p-0">
             <div className="bg-primary p-6 text-white flex justify-between items-center relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -118,12 +118,12 @@ export default function BuktiDaftarUlang() {
                     {new Date(data.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </span>
                 </div>
-                
+
                 <div className="col-span-2">
                   <span className="block text-xs text-slate-400 font-semibold uppercase mb-1">Nama Siswa / NISN</span>
                   <span className="font-bold text-slate-800 text-xl">{data.namaLengkap} <span className="text-sm text-slate-500 font-normal">({data.nisn})</span></span>
                 </div>
-                
+
                 <div className="col-span-2">
                   <span className="block text-xs text-slate-400 font-semibold uppercase mb-1">Tempat, Tanggal Lahir</span>
                   <span className="font-bold text-slate-800 text-lg">
@@ -132,12 +132,12 @@ export default function BuktiDaftarUlang() {
                       : data.tempatLahir || data.tanggalLahir || '-'}
                   </span>
                 </div>
-                
+
                 <div className="col-span-2">
                   <span className="block text-xs text-slate-400 font-semibold uppercase mb-1">Asal Sekolah</span>
                   <span className="font-bold text-slate-800 text-lg">{data.asalSekolah || '-'}</span>
                 </div>
-                
+
                 <div className="col-span-2">
                   <span className="block text-xs text-slate-400 font-semibold uppercase mb-1">Jurusan Diterima</span>
                   <span className="font-bold text-primary text-lg">{data.pilihanJurusan1}</span>
@@ -163,8 +163,8 @@ export default function BuktiDaftarUlang() {
         </Card>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center print:hidden">
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             leftIcon={<Printer className="w-5 h-5" />}
             onClick={() => data && generateBuktiPdf(data)}
           >
@@ -176,9 +176,9 @@ export default function BuktiDaftarUlang() {
             </Button>
           </Link>
         </div>
-        
+
         <p className="text-center text-sm text-slate-500 mt-6 max-w-md mx-auto print:hidden">
-          Silakan cetak atau simpan bukti ini dan bawa pada saat hari pertama kegiatan pengenalan lingkungan sekolah.
+          Silakan cetak atau simpan bukti ini dan bawa pada saat hari pertama kegiatan Masa Pengenalan Lingkungan Sekolah (MPLS).
         </p>
       </div>
     </div>
