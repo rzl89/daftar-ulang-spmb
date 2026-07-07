@@ -6,6 +6,7 @@ import { Button, Card, CardContent, Input, Select, Stepper } from "@/components/
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import imageCompression from 'browser-image-compression';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 interface FormQuestion {
@@ -324,9 +325,9 @@ export default function DaftarUlang() {
   };
 
   // ─── File Handling ────────────────────────────────────────────────────────
-  const handleFileChange = (docName: string, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (docName: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
+      let selectedFile = e.target.files[0];
       
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
       if (!allowedTypes.includes(selectedFile.type)) {
@@ -334,8 +335,32 @@ export default function DaftarUlang() {
         return;
       }
       
+      // Automatic image compression if it's an image and large
+      if (selectedFile.type.startsWith('image/')) {
+        try {
+          const options = {
+            maxSizeMB: 1.9,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+          };
+          toast.info(`Memproses file ${docName}...`, { id: `compress-${docName}` });
+          const compressedFile = await imageCompression(selectedFile, options);
+          toast.dismiss(`compress-${docName}`);
+          
+          // Recreate file object to ensure it has a proper name and works with FormData
+          selectedFile = new File([compressedFile], selectedFile.name, {
+            type: compressedFile.type,
+          });
+        } catch (error) {
+          console.error("Error compressing image:", error);
+          toast.dismiss(`compress-${docName}`);
+          toast.error(`Gagal memproses gambar ${docName}.`);
+          return;
+        }
+      }
+
       if (selectedFile.size > 2 * 1024 * 1024) {
-        toast.error(`Ukuran file ${docName} melebihi 2MB.`);
+        toast.error(`Ukuran file ${docName} masih melebihi 2MB setelah diproses. Gunakan file lain atau perkecil manual.`);
         return;
       }
       setFiles(prev => ({ ...prev, [docName]: selectedFile }));
