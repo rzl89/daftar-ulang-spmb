@@ -133,6 +133,11 @@ export default function BuktiDaftarUlang() {
                 </div>
                 
                 <div className="col-span-2">
+                  <span className="block text-xs text-slate-400 font-semibold uppercase mb-1">Asal Sekolah</span>
+                  <span className="font-bold text-slate-800 text-lg">{data.asalSekolah || '-'}</span>
+                </div>
+                
+                <div className="col-span-2">
                   <span className="block text-xs text-slate-400 font-semibold uppercase mb-1">Jurusan Diterima</span>
                   <span className="font-bold text-primary text-lg">{data.pilihanJurusan1}</span>
                 </div>

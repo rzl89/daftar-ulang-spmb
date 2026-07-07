@@ -104,8 +104,7 @@ export default function DaftarUlang() {
     const stepQuestions = questionsByStep[step] || [];
     for (const q of stepQuestions) {
       if (!q.isRequired) continue;
-      // Skip hidden fields (asalSekolah is auto-populated)
-      if (q.fieldName === 'asalSekolah') continue;
+      // No longer skipping asalSekolah
       const val = getValues(q.fieldName);
       if (val === undefined || val === null || val === '') {
         setError(q.fieldName, { type: 'required', message: `${q.label} wajib diisi` });
@@ -181,6 +180,9 @@ export default function DaftarUlang() {
         // Store verified student data (for auto-populating asalSekolah etc.)
         if (result.data) {
           setVerifiedStudent(result.data);
+          if (result.data.asalSekolah) {
+            setValue('asalSekolah', result.data.asalSekolah);
+          }
         }
       } catch (error) {
         setIsSubmitting(false);
@@ -388,8 +390,7 @@ export default function DaftarUlang() {
     const fieldError = (errors as any)[q.fieldName];
     const errorMsg = fieldError?.message as string | undefined;
 
-    // Skip: asalSekolah is auto-populated from passed_students data
-    if (q.fieldName === 'asalSekolah') return null;
+    // No longer skipping asalSekolah
 
     // Special: Jurusan fields use the jurusan API data
     if (q.fieldName === 'pilihanJurusan1' || q.fieldName === 'pilihanJurusan2') {
@@ -544,6 +545,12 @@ export default function DaftarUlang() {
         <h1 className="text-3xl font-bold text-slate-800 mb-2">Formulir Daftar Ulang</h1>
         <p className="text-slate-500">Lengkapi data di bawah ini dengan informasi yang valid dan benar.</p>
       </div>
+
+      <datalist id="sekolah-saran">
+        {sekolahList.map((sekolah, i) => (
+          <option key={i} value={sekolah} />
+        ))}
+      </datalist>
 
       <div className="mb-10 px-2 md:px-10">
         <Stepper steps={STEP_TITLES} currentStep={currentStep} />

@@ -7,6 +7,7 @@ interface PdfData {
   nisn: string;
   tempatLahir?: string;
   tanggalLahir?: string;
+  asalSekolah?: string;
   pilihanJurusan1: string;
   createdAt: string;
 }
@@ -97,6 +98,7 @@ export async function generateBuktiPdf(data: PdfData): Promise<void> {
     ['Nama Lengkap', data.namaLengkap],
     ['NISN', data.nisn],
     ['Tempat, Tanggal Lahir', ttl],
+    ['Asal Sekolah', data.asalSekolah || '-'],
     ['Jurusan Diterima', data.pilihanJurusan1],
     ['Tanggal Daftar Ulang', new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(data.createdAt))],
   ];
