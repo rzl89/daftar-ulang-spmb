@@ -10,11 +10,15 @@ interface Registration {
   nisn: string;
   namaLengkap: string;
   status: string;
+  dataPribadi: any;
+  dataOrtu: any;
+  dataAkademik: any;
   dokumen: {
     ijazahUrl?: string;
     kartuKeluargaUrl?: string;
     aktaKelahiranUrl?: string;
     pasFotoUrl?: string;
+    [key: string]: string | undefined;
   } | null;
 }
 
@@ -23,6 +27,7 @@ export default function VerifikasiBerkas() {
   const [filteredData, setFilteredData] = useState<Registration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('MENUNGGU_VERIFIKASI');
+  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -141,6 +146,12 @@ export default function VerifikasiBerkas() {
                     <p className="text-xs text-slate-500 dark:text-slate-400">{reg.registrationId} • {reg.nisn}</p>
                   </div>
                 </div>
+                <button
+                  onClick={() => setSelectedRegistration(reg)}
+                  className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 whitespace-nowrap"
+                >
+                  Lihat Detail
+                </button>
               </div>
 
               <div className="space-y-3 flex-1">
@@ -200,6 +211,75 @@ export default function VerifikasiBerkas() {
           ))
         )}
       </div>
+      {/* Modal Detail Siswa */}
+      {selectedRegistration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={() => setSelectedRegistration(null)}>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-700 pb-4">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">Detail Pendaftar</h2>
+              <button onClick={() => setSelectedRegistration(null)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Biodata */}
+              <div>
+                <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Data Pribadi & Akademik</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 text-sm">
+                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">Nama Lengkap</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.dataPribadi?.namaLengkap || selectedRegistration.namaLengkap}</span></div>
+                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">NISN</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.dataPribadi?.nisn || selectedRegistration.nisn}</span></div>
+                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">Tempat, Tgl Lahir</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.dataPribadi?.tempatLahir || '-'}, {selectedRegistration.dataPribadi?.tanggalLahir || '-'}</span></div>
+                  <div><span className="text-slate-500 dark:text-slate-400 block text-xs">Asal Sekolah</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.dataAkademik?.asalSekolah || '-'}</span></div>
+                  <div className="sm:col-span-2"><span className="text-slate-500 dark:text-slate-400 block text-xs">Pilihan Jurusan</span> <span className="font-medium dark:text-slate-200">{selectedRegistration.dataAkademik?.jurusanPilihan1 || '-'}</span></div>
+                </div>
+              </div>
+
+              {/* Dokumen */}
+              <div>
+                <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Dokumen Terlampir</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {Object.entries(selectedRegistration.dokumen || {}).map(([key, url]) => {
+                    if (!url) return null;
+                    const label = key.replace('Url', '').replace(/([A-Z])/g, ' $1').trim();
+                    return (
+                      <a 
+                        key={key} 
+                        href={url as string} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl transition-colors group"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 capitalize truncate">{label}</p>
+                          <p className="text-xs text-blue-600 dark:text-blue-400">Lihat dokumen &rarr;</p>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <button 
+                onClick={() => setSelectedRegistration(null)}
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-sm font-semibold"
+              >
+                Tutup
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

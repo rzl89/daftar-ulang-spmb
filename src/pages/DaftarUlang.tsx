@@ -225,9 +225,12 @@ export default function DaftarUlang() {
       const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '';
       const apiKey = import.meta.env.VITE_CLOUDINARY_API_KEY || '';
 
-      const signRes = await fetch('/api/cloudinary/sign');
+      const nisnFolder = verifiedStudent?.nisn || getValues('nisn') || 'unknown';
+      const folderPath = `SPMB_2026/${nisnFolder}`;
+      
+      const signRes = await fetch(`/api/cloudinary/sign?folder=${encodeURIComponent(folderPath)}`);
       if (!signRes.ok) throw new Error("Gagal mengambil signature upload");
-      const { timestamp, signature } = await signRes.json();
+      const { timestamp, signature, folder } = await signRes.json();
 
       const totalFiles = Object.keys(files).length;
       let uploadedCount = 0;
@@ -239,6 +242,9 @@ export default function DaftarUlang() {
         formData.append('file', file);
         formData.append('api_key', apiKey);
         formData.append('timestamp', timestamp.toString());
+        if (folder) {
+          formData.append('folder', folder);
+        }
         formData.append('signature', signature);
 
         const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {

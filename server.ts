@@ -140,11 +140,19 @@ app.get('/api/cloudinary/sign', uploadSignLimiter, (req, res) => {
       return res.status(500).json({ message: 'Upload service is not configured' });
     }
 
+    const folder = req.query.folder as string | undefined;
     const timestamp = Math.round(new Date().getTime() / 1000);
-    // Cloudinary signature = sha1("timestamp=" + timestamp + apiSecret)
-    const signature = crypto.createHash('sha1').update(`timestamp=${timestamp}${apiSecret}`).digest('hex');
+    
+    // Cloudinary signature = sha1(sorted_params + apiSecret)
+    let signString = '';
+    if (folder) {
+      signString += `folder=${folder}&`;
+    }
+    signString += `timestamp=${timestamp}${apiSecret}`;
 
-    res.json({ timestamp, signature });
+    const signature = crypto.createHash('sha1').update(signString).digest('hex');
+
+    res.json({ timestamp, signature, folder });
   } catch (error) {
     console.error('Error generating signature', error);
     res.status(500).json({ message: 'Terjadi kesalahan server' });
