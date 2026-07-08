@@ -23,6 +23,20 @@ interface Registration {
   } | null;
 }
 
+interface SyncStatus {
+  running: boolean;
+  total: number;
+  processed: number;
+  success: number;
+  failed: number;
+  currentNisn?: string | null;
+  currentNama?: string | null;
+  startedAt?: string | null;
+  lastUpdated?: string | null;
+  finishedAt?: string | null;
+  error?: string | null;
+}
+
 export default function VerifikasiBerkas() {
   const [data, setData] = useState<Registration[]>([]);
   const [filteredData, setFilteredData] = useState<Registration[]>([]);
@@ -30,6 +44,9 @@ export default function VerifikasiBerkas() {
   const [activeTab, setActiveTab] = useState('MENUNGGU_VERIFIKASI');
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [isSyncingSpmb, setIsSyncingSpmb] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -58,6 +75,36 @@ export default function VerifikasiBerkas() {
     }
   }, [activeTab, data]);
 
+  // Polling status sync SPMB
+  useEffect(() => {
+    if (!isPolling) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await apiFetch('/api/admin/spmb-photo-sync/status');
+        if (res.ok) {
+          const data: SyncStatus = await res.json();
+          setSyncStatus(data);
+
+          if (!data.running) {
+            setIsPolling(false);
+            setIsSyncingSpmb(false);
+            if (data.finishedAt) {
+              toast.success(
+                `Sinkronisasi selesai: ${data.success} berhasil, ${data.failed} gagal dari ${data.total} siswa`
+              );
+              fetchData();
+            }
+          }
+        }
+      } catch {
+        // ignore poll errors
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isPolling]);
+
   const handleVerifikasi = async (id: number, status: string, message: string) => {
     try {
       const res = await apiFetch(`/api/admin/registrations/${id}`, {
@@ -79,18 +126,27 @@ export default function VerifikasiBerkas() {
   const handleTarikFotoSpmb = async () => {
     try {
       setIsSyncingSpmb(true);
-      toast.info('Memulai penarikan foto dari SPMB. Proses ini mungkin memakan waktu beberapa menit...');
+      setShowSyncModal(true);
+
       const res = await apiFetch('/api/admin/spmb-photo-sync', { method: 'POST' });
       if (res.ok) {
-        toast.success('Berhasil menarik foto dari SPMB!');
-        fetchData();
+        setIsPolling(true);
+      } else if (res.status === 409) {
+        // Sudah berjalan — ambil status yang ada
+        const err = await res.json();
+        if (err.status) {
+          setSyncStatus(err.status);
+        }
+        setIsPolling(true);
       } else {
         const err = await res.json();
         toast.error(err.message || 'Gagal menarik foto SPMB');
+        setShowSyncModal(false);
+        setIsSyncingSpmb(false);
       }
-    } catch (e) {
+    } catch {
       toast.error('Terjadi kesalahan jaringan');
-    } finally {
+      setShowSyncModal(false);
       setIsSyncingSpmb(false);
     }
   };
@@ -244,6 +300,87 @@ export default function VerifikasiBerkas() {
           ))
         )}
       </div>
+      {/* Sync Progress Modal */}
+      {showSyncModal && syncStatus && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={() => { if (!syncStatus.running) { setShowSyncModal(false); setSyncStatus(null); } }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl max-w-md w-full"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">
+                {syncStatus.running && '🔄 Menarik Foto dari SPMB...'}
+                {!syncStatus.running && syncStatus.finishedAt && !syncStatus.error && '✅ Sinkronisasi Selesai'}
+                {!syncStatus.running && syncStatus.error && '❌ Sinkronisasi Gagal'}
+                {!syncStatus.running && !syncStatus.finishedAt && '⏳ Memulai...'}
+              </h3>
+            </div>
+
+            {/* Progress bar */}
+            {syncStatus.total > 0 && (
+              <div className="mb-4">
+                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+                  <span>{syncStatus.processed} / {syncStatus.total} siswa</span>
+                  <span>{Math.round((syncStatus.processed / syncStatus.total) * 100)}%</span>
+                </div>
+                <div className="w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ease-out ${
+                      !syncStatus.running && syncStatus.error ? 'bg-red-500' :
+                      !syncStatus.running ? 'bg-emerald-500' : 'bg-indigo-500'
+                    }`}
+                    style={{ width: `${Math.min(100, Math.round((syncStatus.processed / syncStatus.total) * 100))}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Stats row */}
+            {syncStatus.processed > 0 && (
+              <div className="flex justify-center gap-6 mb-4 text-sm">
+                <div className="text-center">
+                  <div className="text-emerald-600 dark:text-emerald-400 font-bold text-xl">{syncStatus.success}</div>
+                  <div className="text-xs text-slate-500">Berhasil</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-red-600 dark:text-red-400 font-bold text-xl">{syncStatus.failed}</div>
+                  <div className="text-xs text-slate-500">Gagal</div>
+                </div>
+              </div>
+            )}
+
+            {/* Current student */}
+            {syncStatus.running && syncStatus.currentNama && (
+              <div className="flex items-center justify-center gap-2 py-2 mb-4">
+                <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                <span className="text-sm text-slate-600 dark:text-slate-300">
+                  {syncStatus.currentNama} ({syncStatus.currentNisn})
+                </span>
+              </div>
+            )}
+
+            {/* Error message */}
+            {syncStatus.error && (
+              <div className="bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl p-3 mb-4">
+                <p className="text-xs text-red-600 dark:text-red-400">{syncStatus.error}</p>
+              </div>
+            )}
+
+            {/* Close button — only when done */}
+            {!syncStatus.running && (
+              <button
+                onClick={() => { setShowSyncModal(false); setSyncStatus(null); }}
+                className="w-full py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-sm font-semibold"
+              >
+                Tutup
+              </button>
+            )}
+          </motion.div>
+        </div>
+      )}
+
       {/* Modal Detail Siswa */}
       {selectedRegistration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={() => setSelectedRegistration(null)}>

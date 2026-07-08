@@ -13,6 +13,8 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { z } from 'zod';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -500,8 +502,30 @@ app.delete('/api/admin/registrations/:id', async (req, res) => {
 });
 
 // POST - Trigger SPMB photo sync
+const SYNC_STATUS_FILE = path.join(process.cwd(), 'spmb-sync-status.json');
+
 app.post('/api/admin/spmb-photo-sync', async (_req, res) => {
   try {
+    // Cek apakah sync sedang berjalan
+    if (fs.existsSync(SYNC_STATUS_FILE)) {
+      try {
+        const current = JSON.parse(fs.readFileSync(SYNC_STATUS_FILE, 'utf-8'));
+        if (current.running) {
+          return res.status(409).json({
+            message: 'Sinkronisasi sedang berjalan. Tunggu hingga selesai.',
+            status: current,
+          });
+        }
+      } catch { /* file corrupt — lanjutkan */ }
+    }
+
+    // Reset status file sebelum spawn
+    fs.writeFileSync(SYNC_STATUS_FILE, JSON.stringify({
+      running: false, total: 0, processed: 0, success: 0, failed: 0,
+      currentNisn: null, currentNama: null,
+      startedAt: null, lastUpdated: new Date().toISOString(),
+    }, null, 2));
+
     const { spawn } = await import('child_process');
     const child = spawn('npx', ['tsx', 'download-foto.ts', '--sync-db'], {
       detached: true,
@@ -511,6 +535,27 @@ app.post('/api/admin/spmb-photo-sync', async (_req, res) => {
     res.json({ message: 'Proses penarikan foto dimulai di latar belakang' });
   } catch (e: any) {
     res.status(500).json({ message: 'Gagal memulai penarikan foto' });
+  }
+});
+
+// GET - SPMB photo sync status
+app.get('/api/admin/spmb-photo-sync/status', (_req, res) => {
+  try {
+    if (!fs.existsSync(SYNC_STATUS_FILE)) {
+      return res.json({
+        running: false, total: 0, processed: 0, success: 0, failed: 0,
+        currentNisn: null, currentNama: null,
+        startedAt: null, lastUpdated: null, finishedAt: null,
+      });
+    }
+    const data = JSON.parse(fs.readFileSync(SYNC_STATUS_FILE, 'utf-8'));
+    res.json(data);
+  } catch {
+    res.json({
+      running: false, total: 0, processed: 0, success: 0, failed: 0,
+      currentNisn: null, currentNama: null,
+      startedAt: null, lastUpdated: null, finishedAt: null,
+    });
   }
 });
 
