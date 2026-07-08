@@ -20,7 +20,8 @@ import {
   FileSpreadsheet,
   BookOpen,
   HelpCircle,
-  Share2
+  Share2,
+  ListChecks
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -29,6 +30,7 @@ const menuItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/admin/peserta', label: 'Data Peserta', icon: Users },
   { path: '/admin/kelulusan', label: 'Data Kelulusan', icon: FileSpreadsheet },
+  { path: '/admin/rekap', label: 'Rekap Daftar Ulang', icon: ListChecks },
   { path: '/admin/verifikasi', label: 'Verifikasi Berkas', icon: FileCheck },
   { path: '/admin/jurusan', label: 'Kelola Jurusan', icon: BookOpen },
   { path: '/admin/pertanyaan', label: 'Kelola Pertanyaan', icon: HelpCircle },

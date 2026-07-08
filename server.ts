@@ -758,6 +758,76 @@ app.get('/api/admin/stats', async (_req, res) => {
 
 
 // ================================================================
+//  REKAP DAFTAR ULANG — Cross-reference passed_students vs registrations
+// ================================================================
+app.get('/api/admin/rekap-daftar-ulang', async (_req, res) => {
+  try {
+    // Fetch both tables
+    const [passedStudentsData, registrationsData] = await Promise.all([
+      db.query.passedStudents.findMany({
+        orderBy: [asc(schema.passedStudents.namaLengkap)],
+      }),
+      db.query.registrations.findMany({
+        columns: { nisn: true, registrationId: true, namaLengkap: true, status: true, pilihanJurusan1: true, createdAt: true },
+        orderBy: [desc(schema.registrations.createdAt)],
+      }),
+    ]);
+
+    // Build a map of NISN -> registration for fast lookup
+    const regByNisn = new Map<string, typeof registrationsData[0]>();
+    for (const reg of registrationsData) {
+      if (!regByNisn.has(reg.nisn)) {
+        regByNisn.set(reg.nisn, reg);
+      }
+    }
+
+    // Cross-reference: merge passed students with registration data
+    const rekap = passedStudentsData.map((student) => {
+      const reg = regByNisn.get(student.nisn);
+      return {
+        nisn: student.nisn,
+        namaLengkap: student.namaLengkap,
+        tanggalLahir: student.tanggalLahir || '-',
+        asalSekolah: student.asalSekolah || '-',
+        jurusanDiterima: student.jurusanDiterima || '-',
+        // Registration info (null if not registered)
+        sudahDaftarUlang: !!reg,
+        registrationId: reg?.registrationId || null,
+        statusDaftarUlang: reg?.status || null,
+        pilihanJurusan1: reg?.pilihanJurusan1 || null,
+        tanggalDaftar: reg?.createdAt || null,
+      };
+    });
+
+    // Aggregate stats
+    const totalLulus = rekap.length;
+    const sudahDaftarUlang = rekap.filter(r => r.sudahDaftarUlang).length;
+    const belumDaftarUlang = rekap.filter(r => !r.sudahDaftarUlang).length;
+    const diterima = rekap.filter(r => r.statusDaftarUlang === 'DITERIMA').length;
+    const menunggu = rekap.filter(r => r.statusDaftarUlang === 'MENUNGGU_VERIFIKASI').length;
+    const ditolak = rekap.filter(r => r.statusDaftarUlang === 'DITOLAK').length;
+    const revisi = rekap.filter(r => r.statusDaftarUlang === 'REVISI').length;
+
+    res.json({
+      stats: {
+        totalLulus,
+        sudahDaftarUlang,
+        belumDaftarUlang,
+        diterima,
+        menunggu,
+        ditolak,
+        revisi,
+        persentaseDaftarUlang: totalLulus > 0 ? Math.round((sudahDaftarUlang / totalLulus) * 100) : 0,
+      },
+      data: rekap,
+    });
+  } catch (e: any) {
+    console.error('GET /api/admin/rekap-daftar-ulang', e.message);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
+// ================================================================
 //  PASSED STUDENTS (KELULUSAN) — ADMIN & PUBLIC
 // ================================================================
 
