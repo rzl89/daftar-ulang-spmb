@@ -1187,6 +1187,10 @@ app.post('/api/admin/form-questions/seed', async (_req, res) => {
       { section: 'akademik', fieldName: 'asalSekolah', label: 'Asal Sekolah', fieldType: 'text', placeholder: 'Cari dan pilih nama sekolah', isRequired: true, sortOrder: 11 },
       { section: 'akademik', fieldName: 'pilihanJurusan1', label: 'Pilihan Jurusan 1', fieldType: 'select', options: [], isRequired: true, sortOrder: 12 },
       { section: 'akademik', fieldName: 'pilihanJurusan2', label: 'Pilihan Jurusan 2', fieldType: 'select', options: [], isRequired: true, sortOrder: 13 },
+      // Dokumen
+      { section: 'dokumen', fieldName: 'ijazahUrl', label: 'Ijazah Asli', fieldType: 'file', placeholder: 'Upload Ijazah Asli (PDF/JPG maks. 2MB)', isRequired: true, sortOrder: 14 },
+      { section: 'dokumen', fieldName: 'kartuKeluargaUrl', label: 'Kartu Keluarga (KK)', fieldType: 'file', placeholder: 'Upload Kartu Keluarga (PDF/JPG maks. 2MB)', isRequired: true, sortOrder: 15 },
+      { section: 'dokumen', fieldName: 'aktaKelahiranUrl', label: 'Akta Kelahiran', fieldType: 'file', placeholder: 'Upload Akta Kelahiran (PDF/JPG maks. 2MB)', isRequired: true, sortOrder: 16 },
     ];
 
     let seeded = 0;

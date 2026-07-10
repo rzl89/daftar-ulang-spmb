@@ -43,11 +43,7 @@ export default function DaftarUlang() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [jurusanList, setJurusanList] = useState<{code: string, name: string}[]>([]);
-  const [files, setFiles] = useState<Record<string, File | null>>({
-    "Surat Keterangan Lulus (SKL)": null,
-    "Kartu Keluarga (KK)": null,
-    "Akta Kelahiran": null
-  });
+  const [files, setFiles] = useState<Record<string, File | null>>({});
   const [missingDocs, setMissingDocs] = useState<string[]>([]);
 
   // Dynamic form questions from API
@@ -77,6 +73,21 @@ export default function DaftarUlang() {
       setIsLoadingQuestions(false);
     });
   }, []);
+
+  // ─── Initialize files state from dokumen questions ────────────────────────
+  useEffect(() => {
+    const dokumenQuestions = questions.filter(q => q.section === 'dokumen' && q.fieldType === 'file');
+    if (dokumenQuestions.length > 0) {
+      setFiles(prev => {
+        const next: Record<string, File | null> = {};
+        dokumenQuestions.forEach(q => {
+          // Preserve existing file if already selected
+          next[q.fieldName] = prev[q.fieldName] ?? null;
+        });
+        return next;
+      });
+    }
+  }, [questions]);
 
   // ─── Group questions by step ──────────────────────────────────────────────
   const questionsByStep = useMemo(() => {
@@ -205,9 +216,14 @@ export default function DaftarUlang() {
     const { valid } = validateStep(currentStep);
     if (!valid) return;
 
-    // Check required documents
+    // Check required documents (only flagged if question isRequired)
+    const dokumenQuestions = questionsByStep[4] || [];
     const unselected = Object.entries(files)
-      .filter(([_, file]) => file === null)
+      .filter(([fieldName, file]) => {
+        if (file !== null) return false;
+        const q = dokumenQuestions.find(dq => dq.fieldName === fieldName);
+        return q?.isRequired !== false; // required by default
+      })
       .map(([name]) => name);
       
     if (unselected.length > 0) {
@@ -254,15 +270,11 @@ export default function DaftarUlang() {
         });
 
         if (!uploadRes.ok) throw new Error(`Gagal mengunggah ${docName}`);
-        
+
         const uploadData = await uploadRes.json();
-        
-        let schemaKey = docName;
-        if (docName === "Surat Keterangan Lulus (SKL)") schemaKey = "ijazahUrl";
-        else if (docName === "Kartu Keluarga (KK)") schemaKey = "kartuKeluargaUrl";
-        else if (docName === "Akta Kelahiran") schemaKey = "aktaKelahiranUrl";
-        
-        dokumen[schemaKey] = uploadData.secure_url;
+
+        // fieldName (docName) maps directly to DB column (ijazahUrl, kartuKeluargaUrl, aktaKelahiranUrl)
+        dokumen[docName] = uploadData.secure_url;
         
         uploadedCount++;
         setUploadProgress(10 + Math.round((uploadedCount / totalFiles) * 70));
@@ -455,6 +467,9 @@ export default function DaftarUlang() {
       );
     }
 
+    // File upload fields are rendered separately in Step 4
+    if (q.fieldType === 'file') return null;
+
     switch (q.fieldType) {
       case 'select': {
         const opts = [
@@ -642,45 +657,48 @@ export default function DaftarUlang() {
                   <div className="space-y-6">
                     <h2 className="text-xl font-bold text-slate-800 border-b pb-2 mb-6">4. Upload Berkas & Konfirmasi</h2>
                     <p className="text-sm text-slate-500 mb-4">Pilih dokumen pendaftaran (PDF/JPG maksimal 2MB per file).</p>
-                    
+
                     <div className="space-y-4 mb-8">
-                      {["Surat Keterangan Lulus (SKL)", "Kartu Keluarga (KK)", "Akta Kelahiran"].map((doc) => {
-                        const isMissing = missingDocs.includes(doc);
+                      {(questionsByStep[4] || []).map((q) => {
+                        const isMissing = q.isRequired && missingDocs.includes(q.fieldName);
+                        const file = files[q.fieldName];
                         return (
-                          <div key={doc}>
+                          <div key={q.id}>
                             <div className={`border rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white shadow-sm transition-colors ${isMissing ? 'border-destructive bg-destructive/5' : 'border-slate-200'}`}>
                               <div className="flex items-center gap-4">
                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isMissing ? 'bg-destructive/10 text-destructive' : 'bg-slate-50 text-slate-400'}`}>
-                                  <FileText className={`w-5 h-5 ${files[doc] ? 'text-success' : ''}`} />
+                                  <FileText className={`w-5 h-5 ${file ? 'text-success' : ''}`} />
                                 </div>
                                 <div>
-                                  <h4 className="font-semibold text-slate-800 text-sm">{doc} <span className="text-destructive">*</span></h4>
-                                  {files[doc] && (
-                                    <p className="text-xs text-slate-500 mt-1">{files[doc]?.name}</p>
+                                  <h4 className="font-semibold text-slate-800 text-sm">
+                                    {q.label} {q.isRequired && <span className="text-destructive">*</span>}
+                                  </h4>
+                                  {file && (
+                                    <p className="text-xs text-slate-500 mt-1">{file.name}</p>
                                   )}
                                 </div>
                               </div>
                               <div className="shrink-0 relative">
-                                <input 
-                                  type="file" 
-                                  id={`file-upload-${doc}`}
+                                <input
+                                  type="file"
+                                  id={`file-upload-${q.fieldName}`}
                                   accept=".pdf,.jpg,.jpeg,.png"
                                   onChange={(e) => {
-                                    handleFileChange(doc, e);
+                                    handleFileChange(q.fieldName, e);
                                     if (e.target.files && e.target.files[0]) {
-                                      setMissingDocs(prev => prev.filter(d => d !== doc));
+                                      setMissingDocs(prev => prev.filter(d => d !== q.fieldName));
                                     }
                                   }}
                                   className="hidden"
                                 />
-                                <Button 
-                                  type="button" 
-                                  variant={files[doc] ? "ghost" : (isMissing ? "danger" : "outline")} 
-                                  size="sm" 
+                                <Button
+                                  type="button"
+                                  variant={file ? "ghost" : (isMissing ? "danger" : "outline")}
+                                  size="sm"
                                   leftIcon={<Upload className="w-4 h-4" />}
-                                  onClick={() => document.getElementById(`file-upload-${doc}`)?.click()}
+                                  onClick={() => document.getElementById(`file-upload-${q.fieldName}`)?.click()}
                                 >
-                                  {files[doc] ? "Ubah File" : "Pilih File"}
+                                  {file ? "Ubah File" : "Pilih File"}
                                 </Button>
                               </div>
                             </div>
