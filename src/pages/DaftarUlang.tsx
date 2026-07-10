@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Upload, FileText, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Clock, Loader2 } from "lucide-react";
-import { Button, Card, CardContent, Input, Select, Stepper } from "@/components/ui";
+import { Button, Card, CardContent, Input, Select, Stepper, Combobox } from "@/components/ui";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -421,7 +421,25 @@ export default function DaftarUlang() {
     const fieldError = (errors as any)[q.fieldName];
     const errorMsg = fieldError?.message as string | undefined;
 
-    // No longer skipping asalSekolah
+    // Special: Asal Sekolah uses searchable Combobox
+    if (q.fieldName === 'asalSekolah') {
+      const { ref, ...rest } = register(q.fieldName);
+      return (
+        <Combobox
+          key={q.id}
+          ref={ref}
+          name={q.fieldName}
+          label={q.label}
+          options={sekolahList}
+          value={watch(q.fieldName) || ''}
+          onChange={(val) => setValue(q.fieldName, val, { shouldValidate: false })}
+          onBlur={() => { trigger(q.fieldName); }}
+          placeholder={q.placeholder || 'Cari dan pilih nama sekolah...'}
+          error={errorMsg}
+          required={q.isRequired}
+        />
+      );
+    }
 
     // Special: Jurusan fields use the jurusan API data
     if (q.fieldName === 'pilihanJurusan1' || q.fieldName === 'pilihanJurusan2') {
@@ -564,7 +582,6 @@ export default function DaftarUlang() {
             {...register(q.fieldName)}
             error={errorMsg}
             required={q.isRequired}
-            list={q.fieldName === 'asalSekolah' ? 'sekolah-saran' : undefined}
           />
         );
     }
@@ -576,12 +593,6 @@ export default function DaftarUlang() {
         <h1 className="text-3xl font-bold text-slate-800 mb-2">Formulir Daftar Ulang</h1>
         <p className="text-slate-500">Lengkapi data di bawah ini dengan informasi yang valid dan benar.</p>
       </div>
-
-      <datalist id="sekolah-saran">
-        {sekolahList.map((sekolah, i) => (
-          <option key={i} value={sekolah} />
-        ))}
-      </datalist>
 
       <div className="mb-10 px-2 md:px-10">
         <Stepper steps={STEP_TITLES} currentStep={currentStep} />

@@ -1179,12 +1179,12 @@ app.post('/api/admin/form-questions/seed', async (_req, res) => {
       { section: 'dataPribadi', fieldName: 'jenisKelamin', label: 'Jenis Kelamin', fieldType: 'radio', options: ['Laki-laki', 'Perempuan'], isRequired: true, sortOrder: 5 },
       { section: 'dataPribadi', fieldName: 'agama', label: 'Agama', fieldType: 'select', options: ['Islam', 'Protestan', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'], isRequired: true, sortOrder: 6 },
       { section: 'dataPribadi', fieldName: 'alamatLengkap', label: 'Alamat Lengkap', fieldType: 'textarea', placeholder: 'Alamat lengkap sesuai KK', isRequired: true, sortOrder: 7 },
-      { section: 'dataPribadi', fieldName: 'asalSekolah', label: 'Asal Sekolah', fieldType: 'text', placeholder: 'Nama SMP/MTs asal', isRequired: true, sortOrder: 8 },
       // Data Orang Tua
-      { section: 'dataOrangTua', fieldName: 'namaOrangTua', label: 'Nama Orang Tua / Wali', fieldType: 'text', placeholder: 'Nama lengkap orang tua', isRequired: true, sortOrder: 9 },
-      { section: 'dataOrangTua', fieldName: 'pekerjaanOrangTua', label: 'Pekerjaan Orang Tua', fieldType: 'text', placeholder: 'Pekerjaan orang tua', isRequired: true, sortOrder: 10 },
-      { section: 'dataOrangTua', fieldName: 'noTelpOrangTua', label: 'No. Telp Orang Tua', fieldType: 'text', placeholder: '08xxxxxxxxxx', isRequired: true, sortOrder: 11 },
+      { section: 'dataOrangTua', fieldName: 'namaOrangTua', label: 'Nama Orang Tua / Wali', fieldType: 'text', placeholder: 'Nama lengkap orang tua', isRequired: true, sortOrder: 8 },
+      { section: 'dataOrangTua', fieldName: 'pekerjaanOrangTua', label: 'Pekerjaan Orang Tua', fieldType: 'text', placeholder: 'Pekerjaan orang tua', isRequired: true, sortOrder: 9 },
+      { section: 'dataOrangTua', fieldName: 'noTelpOrangTua', label: 'No. Telp Orang Tua', fieldType: 'text', placeholder: '08xxxxxxxxxx', isRequired: true, sortOrder: 10 },
       // Akademik
+      { section: 'akademik', fieldName: 'asalSekolah', label: 'Asal Sekolah', fieldType: 'text', placeholder: 'Cari dan pilih nama sekolah', isRequired: true, sortOrder: 11 },
       { section: 'akademik', fieldName: 'pilihanJurusan1', label: 'Pilihan Jurusan 1', fieldType: 'select', options: [], isRequired: true, sortOrder: 12 },
       { section: 'akademik', fieldName: 'pilihanJurusan2', label: 'Pilihan Jurusan 2', fieldType: 'select', options: [], isRequired: true, sortOrder: 13 },
     ];
