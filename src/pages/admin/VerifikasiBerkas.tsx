@@ -14,13 +14,14 @@ interface Registration {
   asalSekolah?: string;
   pilihanJurusan1?: string;
   status: string;
-  dokumen: {
-    ijazahUrl?: string;
-    kartuKeluargaUrl?: string;
-    aktaKelahiranUrl?: string;
-    pasFotoUrl?: string;
-    [key: string]: string | undefined;
-  } | null;
+  dokumen: Record<string, string> | null;
+}
+
+interface DocumentQuestion {
+  id: number;
+  fieldName: string;
+  label: string;
+  isRequired: boolean;
 }
 
 interface SyncStatus {
@@ -47,6 +48,7 @@ export default function VerifikasiBerkas() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
+  const [documentQuestions, setDocumentQuestions] = useState<DocumentQuestion[]>([]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -65,6 +67,18 @@ export default function VerifikasiBerkas() {
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  // Fetch document question config for dynamic checklist
+  useEffect(() => {
+    fetch('/api/form-questions')
+      .then(r => r.json())
+      .then((questions) => {
+        const docs = (Array.isArray(questions) ? questions : [])
+          .filter((q: any) => q.section === 'dokumen' && q.fieldType === 'file');
+        setDocumentQuestions(docs);
+      })
+      .catch(() => toast.error('Gagal memuat konfigurasi dokumen'));
   }, []);
 
   useEffect(() => {
@@ -243,23 +257,24 @@ export default function VerifikasiBerkas() {
 
               <div className="space-y-3 flex-1">
                 <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Checklist Dokumen</h4>
-                
-                <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
-                  <span className="text-sm flex items-center gap-2 text-slate-700 dark:text-slate-300"><FileText className="w-4 h-4"/> Ijazah / SKHUN</span>
-                  {reg.dokumen?.ijazahUrl ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-slate-300 dark:text-slate-600" />}
-                </div>
-                <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
-                  <span className="text-sm flex items-center gap-2 text-slate-700 dark:text-slate-300"><FileText className="w-4 h-4"/> Kartu Keluarga</span>
-                  {reg.dokumen?.kartuKeluargaUrl ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-slate-300 dark:text-slate-600" />}
-                </div>
-                <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
-                  <span className="text-sm flex items-center gap-2 text-slate-700 dark:text-slate-300"><FileText className="w-4 h-4"/> Akta Kelahiran</span>
-                  {reg.dokumen?.aktaKelahiranUrl ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-slate-300 dark:text-slate-600" />}
-                </div>
-                <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
-                  <span className="text-sm flex items-center gap-2 text-slate-700 dark:text-slate-300"><FileText className="w-4 h-4"/> Pas Foto</span>
-                  {reg.dokumen?.pasFotoUrl ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-slate-300 dark:text-slate-600" />}
-                </div>
+
+                {documentQuestions.length === 0 ? (
+                  <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2">Memuat konfigurasi dokumen...</p>
+                ) : (
+                  documentQuestions.map((q) => (
+                    <div key={q.id} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
+                      <span className="text-sm flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                        <FileText className="w-4 h-4 shrink-0"/> {q.label}
+                        {q.isRequired && <span className="text-destructive text-xs">*</span>}
+                      </span>
+                      {reg.dokumen?.[q.fieldName] ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0" />
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
 
               <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
