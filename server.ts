@@ -265,11 +265,11 @@ const RegistrationSchema = z.object({
     jurusanPilihan2: z.string().optional().default(''),
   }),
   dokumen: z.object({
-    ijazahUrl: z.string().url().optional(),
-    kartuKeluargaUrl: z.string().url().optional(),
-    aktaKelahiranUrl: z.string().url().optional(),
-    pasFotoUrl: z.string().url().optional(),
-  }).optional(),
+    ijazahUrl: z.string().optional(),
+    kartuKeluargaUrl: z.string().optional(),
+    aktaKelahiranUrl: z.string().optional(),
+    pasFotoUrl: z.string().optional(),
+  }).catchall(z.string().optional()).optional(),
   // Dynamic fields managed by admin via Kelola Pertanyaan
   dynamicData: z.record(z.string(), z.any()).optional(),
 });
@@ -287,6 +287,30 @@ app.post('/api/registrations', async (req, res) => {
     }
 
     const data = parsed.data;
+
+    // Validate required documents against form_questions config
+    const requiredDocs = await db.query.formQuestions.findMany({
+      where: (q, { eq, and }) => and(
+        eq(q.section, 'dokumen'),
+        eq(q.fieldType, 'file'),
+        eq(q.isRequired, true),
+        eq(q.isActive, true)
+      ),
+    });
+
+    const missingDocs: string[] = [];
+    for (const doc of requiredDocs) {
+      const url = data.dokumen?.[doc.fieldName];
+      if (!url || typeof url !== 'string' || url.trim() === '') {
+        missingDocs.push(doc.label);
+      }
+    }
+
+    if (missingDocs.length > 0) {
+      return res.status(400).json({
+        message: `Dokumen wajib belum diunggah: ${missingDocs.join(', ')}`,
+      });
+    }
 
     const existing = await db.query.registrations.findFirst({
       where: eq(schema.registrations.nisn, data.dataPribadi.nisn),
