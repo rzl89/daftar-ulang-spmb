@@ -3,9 +3,16 @@ import { apiFetch } from '@/utils/api';
 import { motion, AnimatePresence } from '@/utils/motion-lite';
 import { 
   Upload, Download, Trash2, FileSpreadsheet, CheckCircle2, AlertCircle, 
-  X, Search, Users, RefreshCw, Eye, ArrowUpFromLine
+  X, Search, Users, RefreshCw, Eye, ArrowUpFromLine, UserPlus
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface Jurusan {
+  id: number;
+  code: string;
+  name: string;
+  isActive: boolean;
+}
 
 interface PassedStudent {
   id?: number;
@@ -113,9 +120,22 @@ export default function DataKelulusan() {
   const [activeTab, setActiveTab] = useState<'saved' | 'preview'>('saved');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // State for add single student modal
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [addForm, setAddForm] = useState({
+    nisn: '', namaLengkap: '', tanggalLahir: '', asalSekolah: '', jurusanDiterima: '',
+  });
+  const [jurusanList, setJurusanList] = useState<Jurusan[]>([]);
+
+  // State for individual delete confirmation
+  const [deleteTarget, setDeleteTarget] = useState<PassedStudent | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Fetch existing data from DB
   useEffect(() => {
     fetchSavedData();
+    fetchJurusanList();
   }, []);
 
   const fetchSavedData = async () => {
@@ -130,6 +150,73 @@ export default function DataKelulusan() {
       console.error('Fetch error:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Fetch jurusan list for dropdown
+  const fetchJurusanList = async () => {
+    try {
+      const res = await apiFetch('/api/jurusan');
+      if (res.ok) {
+        const data = await res.json();
+        setJurusanList(data);
+      }
+    } catch (err) {
+      console.error('Fetch jurusan error:', err);
+    }
+  };
+
+  // Add single student
+  const handleAddSingle = async () => {
+    if (!addForm.nisn.trim() || !addForm.namaLengkap.trim()) {
+      toast.error('NISN dan Nama Lengkap wajib diisi');
+      return;
+    }
+    if (addForm.nisn.trim().length < 10) {
+      toast.error('NISN harus minimal 10 digit');
+      return;
+    }
+    setIsAdding(true);
+    try {
+      const res = await apiFetch('/api/admin/passed-students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addForm),
+      });
+      if (res.ok) {
+        toast.success(`Data ${addForm.namaLengkap} berhasil ditambahkan`);
+        setShowAddModal(false);
+        setAddForm({ nisn: '', namaLengkap: '', tanggalLahir: '', asalSekolah: '', jurusanDiterima: '' });
+        fetchSavedData();
+      } else {
+        const err = await res.json();
+        toast.error(err.message || 'Gagal menambahkan data');
+      }
+    } catch (err) {
+      toast.error('Koneksi ke server gagal');
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  // Delete single student
+  const handleDeleteSingle = async () => {
+    if (!deleteTarget?.id) return;
+    setIsDeleting(true);
+    try {
+      const res = await apiFetch(`/api/admin/passed-students/${deleteTarget.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success(`Data ${deleteTarget.namaLengkap} berhasil dihapus`);
+        setDeleteTarget(null);
+        fetchSavedData();
+      } else {
+        const err = await res.json();
+        toast.error(err.message || 'Gagal menghapus data');
+      }
+    } catch (err) {
+      toast.error('Koneksi ke server gagal');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -275,6 +362,13 @@ export default function DataKelulusan() {
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-colors shadow-lg shadow-emerald-600/20 whitespace-nowrap"
+          >
+            <UserPlus className="w-4 h-4" />
+            Tambah Data
+          </button>
           <button
             onClick={handleDownloadTemplate}
             className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm whitespace-nowrap"
@@ -448,19 +542,20 @@ export default function DataKelulusan() {
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Tanggal Lahir</th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Asal Sekolah</th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Jurusan Diterima</th>
+                {activeTab === 'saved' && <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 w-20">Aksi</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {activeTab === 'saved' && isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center">
+                  <td colSpan={activeTab === 'saved' ? 7 : 6} className="px-4 py-12 text-center">
                     <RefreshCw className="w-6 h-6 animate-spin text-slate-400 mx-auto mb-2" />
                     <p className="text-slate-500 dark:text-slate-400">Memuat data...</p>
                   </td>
                 </tr>
               ) : (activeTab === 'saved' ? filteredSaved : previewData).length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center">
+                  <td colSpan={activeTab === 'saved' ? 7 : 6} className="px-4 py-12 text-center">
                     <FileSpreadsheet className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                     <p className="text-slate-500 dark:text-slate-400 font-medium">
                       {activeTab === 'saved' ? 'Belum ada data kelulusan' : 'Belum ada file yang diupload'}
@@ -487,6 +582,17 @@ export default function DataKelulusan() {
                         </span>
                       ) : '-'}
                     </td>
+                    {activeTab === 'saved' && (
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => setDeleteTarget(student)}
+                          className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                          title={`Hapus ${student.namaLengkap}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
@@ -494,6 +600,185 @@ export default function DataKelulusan() {
           </table>
         </div>
       </div>
+
+      {/* Add Single Student Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setShowAddModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-xl"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                    <UserPlus className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-white">Tambah Data Kelulusan</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Input data peserta lulus secara manual</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* NISN */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    NISN <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={addForm.nisn}
+                    onChange={(e) => setAddForm(f => ({ ...f, nisn: e.target.value }))}
+                    placeholder="Masukkan NISN (min. 10 digit)"
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all dark:text-white"
+                    maxLength={20}
+                  />
+                </div>
+
+                {/* Nama Lengkap */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Nama Lengkap <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={addForm.namaLengkap}
+                    onChange={(e) => setAddForm(f => ({ ...f, namaLengkap: e.target.value }))}
+                    placeholder="Masukkan nama lengkap peserta"
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all dark:text-white"
+                  />
+                </div>
+
+                {/* Tanggal Lahir */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Tanggal Lahir
+                  </label>
+                  <input
+                    type="date"
+                    value={addForm.tanggalLahir}
+                    onChange={(e) => setAddForm(f => ({ ...f, tanggalLahir: e.target.value }))}
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all dark:text-white"
+                  />
+                </div>
+
+                {/* Asal Sekolah */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Asal Sekolah
+                  </label>
+                  <input
+                    type="text"
+                    value={addForm.asalSekolah}
+                    onChange={(e) => setAddForm(f => ({ ...f, asalSekolah: e.target.value }))}
+                    placeholder="Masukkan asal sekolah"
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all dark:text-white"
+                  />
+                </div>
+
+                {/* Jurusan Diterima - Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Jurusan Diterima
+                  </label>
+                  <select
+                    value={addForm.jurusanDiterima}
+                    onChange={(e) => setAddForm(f => ({ ...f, jurusanDiterima: e.target.value }))}
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all dark:text-white"
+                  >
+                    <option value="">— Pilih Jurusan —</option>
+                    {jurusanList.map((j) => (
+                      <option key={j.id} value={j.code}>{j.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end mt-6">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleAddSingle}
+                  disabled={isAdding || !addForm.nisn.trim() || !addForm.namaLengkap.trim()}
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-500 transition-colors shadow-sm disabled:opacity-50"
+                >
+                  {isAdding ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  {isAdding ? 'Menyimpan...' : 'Simpan Data'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Single Confirmation Modal */}
+      <AnimatePresence>
+        {deleteTarget && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setDeleteTarget(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full shadow-xl"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-white">Hapus Data Peserta</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Tindakan ini tidak dapat dibatalkan</p>
+                </div>
+              </div>
+              <p className="text-slate-600 dark:text-slate-300 text-sm mb-6">
+                Apakah Anda yakin ingin menghapus data kelulusan untuk <strong>{deleteTarget.namaLengkap}</strong> (NISN: {deleteTarget.nisn}) dari database?
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={isDeleting}
+                  className="px-4 py-2 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleDeleteSingle}
+                  disabled={isDeleting}
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-red-600 text-white rounded-xl font-medium hover:bg-red-500 transition-colors shadow-sm disabled:opacity-50"
+                >
+                  {isDeleting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  {isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Reset Confirmation Modal */}
       <AnimatePresence>

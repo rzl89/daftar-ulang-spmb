@@ -944,6 +944,68 @@ app.delete('/api/admin/passed-students', async (_req, res) => {
   }
 });
 
+// POST — Add single passed student
+app.post('/api/admin/passed-students', async (req, res) => {
+  try {
+    const { nisn, namaLengkap, tanggalLahir, asalSekolah, jurusanDiterima } = req.body;
+
+    if (!nisn || !namaLengkap) {
+      return res.status(400).json({ message: 'NISN dan Nama Lengkap wajib diisi' });
+    }
+
+    const trimmedNisn = String(nisn).trim();
+    const trimmedNama = String(namaLengkap).trim();
+
+    if (trimmedNisn.length < 10) {
+      return res.status(400).json({ message: 'NISN harus minimal 10 digit' });
+    }
+
+    // Check for duplicate NISN
+    const existing = await db.query.passedStudents.findFirst({
+      where: eq(schema.passedStudents.nisn, trimmedNisn),
+    });
+    if (existing) {
+      return res.status(409).json({ message: `NISN ${trimmedNisn} sudah terdaftar dalam data kelulusan` });
+    }
+
+    const [inserted] = await db.insert(schema.passedStudents).values({
+      nisn: trimmedNisn,
+      namaLengkap: trimmedNama,
+      tanggalLahir: tanggalLahir ? String(tanggalLahir).trim() : null,
+      asalSekolah: asalSekolah ? String(asalSekolah).trim() : null,
+      jurusanDiterima: jurusanDiterima ? String(jurusanDiterima).trim() : null,
+    }).returning();
+
+    res.status(201).json(inserted);
+  } catch (e: any) {
+    console.error('Single Insert Error:', e.message);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
+// DELETE — Delete single passed student by ID
+app.delete('/api/admin/passed-students/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: 'ID tidak valid' });
+    }
+
+    const existing = await db.query.passedStudents.findFirst({
+      where: eq(schema.passedStudents.id, id),
+    });
+    if (!existing) {
+      return res.status(404).json({ message: 'Data peserta tidak ditemukan' });
+    }
+
+    await db.delete(schema.passedStudents).where(eq(schema.passedStudents.id, id));
+    res.json({ message: `Data ${existing.namaLengkap} berhasil dihapus` });
+  } catch (e: any) {
+    console.error('Delete Single Error:', e.message);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
 function getPossibleDateNorms(dateStr: string): string[] {
   if (!dateStr) return [];
   const trimmed = dateStr.trim();
